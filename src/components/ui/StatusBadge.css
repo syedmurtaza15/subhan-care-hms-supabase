@@ -1,0 +1,147 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-badge--sm {
+  padding: 2px 7px;
+  font-size: 10px;
+}
+
+.status-badge--lg {
+  padding: 6px 12px;
+  font-size: var(--font-size-sm);
+}
+
+.status-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+.status-badge--default {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.status-badge--active,
+.status-badge--success {
+  background-color: var(--color-secondary-soft);
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.status-badge--completed {
+  background-color: var(--color-info-soft);
+  color: #075985;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.status-badge--pending,
+.status-badge--waiting {
+  background-color: var(--color-warning-soft);
+  color: #92400E;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-badge--inactive,
+.status-badge--cancelled {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-tertiary);
+  border-color: var(--color-border);
+}
+
+.status-badge--followup {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.status-badge--paid {
+  background-color: var(--color-secondary-soft);
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.status-badge--unpaid {
+  background-color: var(--color-warning-soft);
+  color: #92400E;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-badge--overdue {
+  background-color: var(--color-danger-soft);
+  color: #991B1B;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.status-badge--partial {
+  background-color: var(--color-info-soft);
+  color: #075985;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.status-badge--refunded {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.status-badge--high {
+  background-color: var(--color-danger-soft);
+  color: #991B1B;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.status-badge--medium {
+  background-color: var(--color-warning-soft);
+  color: #92400E;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-badge--low {
+  background-color: var(--color-secondary-soft);
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.status-badge--primary {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.status-badge--secondary {
+  background-color: rgba(168, 85, 247, 0.12);
+  color: #6B21A8;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.status-badge--warning {
+  background-color: var(--color-warning-soft);
+  color: #92400E;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-badge--danger {
+  background-color: var(--color-danger-soft);
+  color: #991B1B;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.status-badge--info {
+  background-color: var(--color-info-soft);
+  color: #075985;
+  border-color: rgba(14, 165, 233, 0.3);
+}

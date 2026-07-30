@@ -1,0 +1,100 @@
+.prescription-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prescription-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.prescription-form__items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+}
+
+.prescription-form__items-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prescription-form__items-header h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.prescription-form__item {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prescription-form__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prescription-form__item-num {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--color-primary), #1E40AF);
+  color: var(--color-text-inverse);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+}
+
+.prescription-form__item-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.prescription-form__item-remove:hover {
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.prescription-form__item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.prescription-form__error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  font-weight: var(--font-weight-medium);
+  margin: 0;
+}
+
+.prescription-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}

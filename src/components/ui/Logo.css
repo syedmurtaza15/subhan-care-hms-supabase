@@ -1,0 +1,74 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.logo__mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1E40AF 100%);
+  color: var(--color-text-inverse);
+  box-shadow: 0 6px 14px -6px rgba(37, 99, 235, 0.6);
+  transition: transform var(--transition-base);
+}
+
+.logo:hover .logo__mark {
+  transform: scale(1.05);
+}
+
+.logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo__brand {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  letter-spacing: 0.2px;
+}
+
+.logo__tag {
+  font-weight: var(--font-weight-regular);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+/* Sizes */
+.logo--sm .logo__mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+}
+
+.logo--sm .logo__brand {
+  font-size: var(--font-size-base);
+}
+
+.logo--lg .logo__mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
+.logo--lg .logo__brand {
+  font-size: var(--font-size-xl);
+}
+
+.logo--xl .logo__mark {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+}
+
+.logo--xl .logo__brand {
+  font-size: var(--font-size-2xl);
+}

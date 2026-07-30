@@ -1,0 +1,110 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.pagination__info {
+  color: var(--color-text-secondary);
+}
+
+.pagination__info strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.pagination__nav,
+.pagination__page {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base),
+    border-color var(--transition-base);
+  font-family: inherit;
+}
+
+.pagination__nav:hover:not(:disabled),
+.pagination__page:hover:not(:disabled) {
+  background-color: var(--color-surface-2);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
+.pagination__page--active {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+.pagination__page--active:hover {
+  background-color: var(--color-primary-hover) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-primary-hover) !important;
+}
+
+.pagination__page--ellipsis {
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+}
+
+.pagination__nav:disabled,
+.pagination__page:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination__page-size label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.pagination__page-size select {
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 0 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  font-family: inherit;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .pagination__controls {
+    justify-content: center;
+  }
+}

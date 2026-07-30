@@ -1,0 +1,13 @@
+.patient-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.patient-filters__group {
+  display: flex;
+  flex-direction: column;
+}

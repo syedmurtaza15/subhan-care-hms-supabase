@@ -1,0 +1,18 @@
+.patient-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.patient-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.patient-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

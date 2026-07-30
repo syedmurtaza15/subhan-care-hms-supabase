@@ -1,0 +1,46 @@
+.appointment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.appointment-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.appointment-form__timeslot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appointment-form__timeslot-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.appointment-form__timeslot-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
+}
+
+.appointment-form__error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.appointment-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

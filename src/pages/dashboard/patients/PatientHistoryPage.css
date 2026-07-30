@@ -1,0 +1,350 @@
+.patient-history {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.patient-history__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  width: fit-content;
+  transition: color var(--transition-base), transform var(--transition-fast);
+}
+
+.patient-history__back:hover {
+  color: var(--color-primary);
+  transform: translateX(-2px);
+}
+
+.patient-history__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.patient-history__eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+
+.patient-history__header h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 6px 0;
+  background: linear-gradient(120deg, #0F172A 0%, #1E40AF 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.patient-history__header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.patient-history__header strong {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.patient-history__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  width: fit-content;
+}
+
+.patient-history__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.patient-history__tab:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
+.patient-history__tab.is-active {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.patient-history__timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.patient-history__timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background-color: var(--color-border);
+  border-radius: 2px;
+}
+
+.patient-history__timeline li {
+  display: flex;
+  gap: 14px;
+  padding: 10px 0;
+  position: relative;
+}
+
+.patient-history__timeline-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  border: 3px solid var(--color-surface);
+  flex-shrink: 0;
+  margin-top: 2px;
+  z-index: 1;
+  box-shadow: 0 0 0 4px var(--color-primary-soft);
+}
+
+.patient-history__timeline-when {
+  margin: 0 0 4px 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.patient-history__timeline-title {
+  margin: 0 0 4px 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.patient-history__timeline-notes {
+  margin: 0 0 8px 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.patient-history__invoices {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.patient-history__invoices li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+  gap: 12px;
+}
+
+.patient-history__invoice-when {
+  margin: 0 0 2px 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+}
+
+.patient-history__invoice-meta {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.patient-history__invoice-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.patient-history__invoice-amount {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+}
+
+@media (max-width: 540px) {
+  .patient-history__tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+.patient-history__tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.patient-history__tab.is-active .patient-history__tab-count {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--color-text-inverse);
+}
+
+.patient-history__prescriptions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.patient-history__rx-link {
+  display: block;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--transition-base), transform var(--transition-fast);
+}
+
+.patient-history__rx-link:hover {
+  background-color: var(--color-primary-soft);
+  transform: translateX(2px);
+  color: var(--color-primary);
+}
+
+.patient-history__rx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.patient-history__rx-id {
+  font-family: 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.patient-history__rx-diagnosis {
+  margin: 0 0 4px 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.patient-history__rx-when {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.patient-history__rx-items {
+  list-style: none;
+  padding: 8px 12px;
+  margin: 0;
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.patient-history__rx-items strong {
+  color: var(--color-text-primary);
+}
+
+.patient-history__records {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.patient-history__records li {
+  display: flex;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+}
+
+.patient-history__record-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-primary), #1E40AF);
+  color: var(--color-text-inverse);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.patient-history__record-title {
+  margin: 0 0 2px 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.patient-history__record-when {
+  margin: 0 0 6px 0;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.patient-history__record-summary {
+  margin: 0 0 4px 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+}
+
+.patient-history__record-details {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}

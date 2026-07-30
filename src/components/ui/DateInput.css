@@ -1,0 +1,93 @@
+.ui-date {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.ui-date--full {
+  width: 100%;
+}
+
+.ui-date__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-date__required {
+  color: var(--color-danger);
+  font-size: var(--font-size-md);
+  line-height: 1;
+}
+
+.ui-date__shell {
+  position: relative;
+}
+
+.ui-date__field {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 40px 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.ui-date__field::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ui-date__field:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.ui-date__field:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.ui-date--error .ui-date__field {
+  border-color: var(--color-danger);
+}
+
+.ui-date__picker-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: calc(var(--input-height) - 8px);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.ui-date__picker-btn:hover {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.ui-date__error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  font-weight: var(--font-weight-medium);
+}
+
+.ui-date__helper {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}

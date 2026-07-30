@@ -1,0 +1,181 @@
+.appointment-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.appointment-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  width: fit-content;
+}
+
+.appointment-detail__back:hover {
+  color: var(--color-primary);
+  transform: translateX(-2px);
+}
+
+.appointment-detail__hero {
+  background: linear-gradient(120deg, #0F172A 0%, #1E40AF 60%, #2563EB 100%);
+  color: var(--color-text-inverse);
+  border: 0;
+}
+
+.appointment-detail__hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 28px;
+  flex-wrap: wrap;
+}
+
+.appointment-detail__pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 255, 255, 0.18);
+  color: var(--color-text-inverse);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.4px;
+}
+
+.appointment-detail__hero-meta h1 {
+  font-size: var(--font-size-2xl);
+  margin: 8px 0 4px 0;
+  color: var(--color-text-inverse);
+}
+
+.appointment-detail__hero-meta p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: var(--font-size-sm);
+}
+
+.appointment-detail__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 255, 255, 0.18);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  margin-left: 4px;
+}
+
+.appointment-detail__tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.appointment-detail__hero-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.appointment-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.appointment-detail__link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--transition-base);
+}
+
+.appointment-detail__link-card:hover {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.appointment-detail__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #1E40AF);
+  color: var(--color-text-inverse);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.appointment-detail__avatar--secondary {
+  background: linear-gradient(135deg, var(--color-secondary), #15803D);
+}
+
+.appointment-detail__name {
+  margin: 0 0 2px 0;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.appointment-detail__meta {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.appointment-detail__empty {
+  margin: 0;
+  color: var(--color-text-tertiary);
+}
+
+.appointment-detail__reason {
+  margin: 0 0 12px 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.appointment-detail__notes {
+  padding: 12px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+}
+
+.appointment-detail__notes-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-tertiary);
+}
+
+.appointment-detail__notes p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+@media (max-width: 800px) {
+  .appointment-detail__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,54 @@
+.time-slot-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.time-slot-picker__slot {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base),
+    color var(--transition-base), transform var(--transition-fast);
+}
+
+.time-slot-picker__slot:hover:not(:disabled) {
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.time-slot-picker__slot--active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.time-slot-picker__slot--active:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: var(--color-text-inverse);
+}
+
+.time-slot-picker__slot--taken {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.time-slot-picker__empty {
+  margin: 0;
+  padding: 14px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
