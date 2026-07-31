@@ -10,7 +10,6 @@ const KEYS = {
   doctors: 'subhan_care.doctors',
   appointments: 'subhan_care.appointments',
   invoices: 'subhan_care.invoices',
-  staff: 'subhan_care.staff',
   prescriptions: 'subhan_care.prescriptions',
   inventory: 'subhan_care.inventory',
   medicalHistory: 'subhan_care.medical_history',
@@ -151,15 +150,6 @@ export const seedIfEmpty = () => {
       { id: 'INV-5002', patientId: 'PT-2393', appointmentId: 'APT-1003', items: [{ description: 'Antenatal visit', quantity: 1, unitPrice: 3000 }, { description: 'Ultrasound', quantity: 1, unitPrice: 4500 }], subtotal: 7500, tax: 375, total: 7875, amountPaid: 0, paymentMethod: 'cash', status: 'unpaid', issuedAt: '2026-07-05T11:00:00.000Z', dueAt: '2026-07-19T11:00:00.000Z' },
       { id: 'INV-5003', patientId: 'PT-2395', appointmentId: 'APT-1005', items: [{ description: 'Neurology consultation', quantity: 1, unitPrice: 4000 }], subtotal: 4000, tax: 200, total: 4200, amountPaid: 2000, paymentMethod: 'cash', status: 'partial', issuedAt: '2026-07-01T08:00:00.000Z', dueAt: '2026-07-15T08:00:00.000Z' },
       { id: 'INV-5004', patientId: 'PT-2394', appointmentId: 'APT-1004', items: [{ description: 'Cardiology consultation', quantity: 1, unitPrice: 3500 }, { description: 'Blood pressure monitoring', quantity: 1, unitPrice: 800 }], subtotal: 4300, tax: 215, total: 4515, amountPaid: 0, paymentMethod: 'card', status: 'overdue', issuedAt: '2026-06-20T09:00:00.000Z', dueAt: '2026-06-27T09:00:00.000Z' },
-    ]);
-  }
-
-  // Staff
-  if (!storage.get(KEYS.staff)) {
-    storage.set(KEYS.staff, [
-      { id: 'STF-001', name: 'Fatima Riaz', role: 'RECEPTIONIST', email: 'fatima.riaz@subancare.com', phone: '+92 301 1122334', department: 'Front Desk', joinDate: '2025-11-12', status: 'active', createdAt: '2025-11-12T08:00:00.000Z', updatedAt: '2025-11-12T08:00:00.000Z' },
-      { id: 'STF-002', name: 'Bilal Ahmed', role: 'PHARMACIST', email: 'bilal.ahmed@subancare.com', phone: '+92 333 6655443', department: 'Pharmacy', joinDate: '2025-08-01', status: 'active', createdAt: '2025-08-01T08:00:00.000Z', updatedAt: '2025-08-01T08:00:00.000Z' },
-      { id: 'STF-003', name: 'Hina Tariq', role: 'BILLING_STAFF', email: 'hina.tariq@subancare.com', phone: '+92 345 7788990', department: 'Finance', joinDate: '2026-01-15', status: 'active', createdAt: '2026-01-15T08:00:00.000Z', updatedAt: '2026-01-15T08:00:00.000Z' },
     ]);
   }
 

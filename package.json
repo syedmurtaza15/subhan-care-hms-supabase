@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview --port 4173",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "scan:secrets": "bash scripts/check-secrets.sh",
+    "scan:secrets": "node scripts/check-secrets.mjs",
     "seed:demo": "node --env-file=.env scripts/seed-demo-users.mjs",
     "prebuild": "npm run scan:secrets"
   },

@@ -61,11 +61,11 @@ const ReportsPage = () => {
   };
 
   const inRangeAppointments = useMemo(
-    () => appointments.list().filter((a) => inRange(a.issuedAt) || inRange(a.date)),
+    () => appointments.list().filter((a) => inRange(a.appointmentDate)),
     [appointments, since],
   );
   const inRangeInvoices = useMemo(
-    () => invoices.list().filter((i) => inRange(i.issuedAt)),
+    () => invoices.list().filter((i) => inRange(i.invoiceDate)),
     [invoices, since],
   );
   const inRangePrescriptions = useMemo(
@@ -75,8 +75,8 @@ const ReportsPage = () => {
 
   // === KPI metrics ===
   const kpis = useMemo(() => {
-    const totalRevenue = inRangeInvoices.reduce((acc, inv) => acc + (inv.amountPaid || 0), 0);
-    const billedRevenue = inRangeInvoices.reduce((acc, inv) => acc + inv.total, 0);
+    const totalRevenue = inRangeInvoices.reduce((acc, inv) => acc + Number(inv.amountPaid || 0), 0);
+    const billedRevenue = inRangeInvoices.reduce((acc, inv) => acc + Number(inv.total || 0), 0);
     const outstanding = billedRevenue - totalRevenue;
     const collectionRate = billedRevenue > 0 ? Math.round((totalRevenue / billedRevenue) * 100) : 0;
     return {
@@ -115,9 +115,9 @@ const ReportsPage = () => {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const label = d.toLocaleString('en-US', { month: 'short' });
       const total = invoices.list().reduce((acc, inv) => {
-        const issued = new Date(inv.issuedAt);
+        const issued = new Date(inv.invoiceDate);
         if (issued.getMonth() === d.getMonth() && issued.getFullYear() === d.getFullYear()) {
-          return acc + (inv.amountPaid || 0);
+          return acc + Number(inv.amountPaid || 0);
         }
         return acc;
       }, 0);
@@ -158,7 +158,7 @@ const ReportsPage = () => {
   const inventoryByCategory = useMemo(() => {
     const map = {};
     inventory.list().forEach((i) => {
-      map[i.category] = (map[i.category] || 0) + i.stock * i.unitPrice;
+      map[i.category || 'Uncategorised'] = (map[i.category || 'Uncategorised'] || 0) + Number(i.stock || 0) * Number(i.unitPrice || 0);
     });
     const colors = { Medication: '#2563EB', Supplies: '#0EA5E9', Equipment: '#A78BFA' };
     return Object.entries(map).map(([cat, value]) => ({
@@ -172,7 +172,7 @@ const ReportsPage = () => {
   const topMeds = useMemo(() => {
     const map = {};
     inRangePrescriptions.forEach((rx) => {
-      rx.items.forEach((it) => {
+      (Array.isArray(rx.items) ? rx.items : []).forEach((it) => {
         map[it.medication] = (map[it.medication] || 0) + 1;
       });
     });
@@ -381,7 +381,7 @@ const ReportsPage = () => {
                       <div>
                         <p className="reports-page__outstanding-id">{inv.id}</p>
                         <p className="reports-page__outstanding-patient">
-                          {patient?.name || 'Unknown'} · due {formatDate(inv.dueAt)}
+                          {patient?.name || 'Unknown'} · invoiced {formatDate(inv.invoiceDate)}
                         </p>
                       </div>
                       <div className="reports-page__outstanding-side">

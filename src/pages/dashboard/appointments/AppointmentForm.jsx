@@ -23,11 +23,6 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
-const MODE_OPTIONS = [
-  { value: 'in-person', label: 'In-person' },
-  { value: 'video', label: 'Video call' },
-];
-
 const AppointmentForm = ({
   initialValues,
   defaultPatientId,
@@ -45,11 +40,9 @@ const AppointmentForm = ({
   const [values, setValues] = useState(() => ({
     patientId: initialValues?.patientId || defaultPatientId || patients[0]?.id || '',
     doctorId: initialValues?.doctorId || defaultDoctorId || doctors[0]?.id || '',
-    date: initialValues?.date || today,
-    time: initialValues?.time || '09:00',
-    duration: initialValues?.duration || 30,
+    appointmentDate: initialValues?.appointmentDate || today,
+    appointmentTime: initialValues?.appointmentTime || '09:00',
     status: initialValues?.status || 'confirmed',
-    mode: initialValues?.mode || 'in-person',
     reason: initialValues?.reason || '',
     notes: initialValues?.notes || '',
   }));
@@ -67,12 +60,12 @@ const AppointmentForm = ({
       .filter(
         (a) =>
           a.doctorId === values.doctorId &&
-          a.date === values.date &&
+          a.appointmentDate === values.appointmentDate &&
           a.id !== initialValues?.id &&
           a.status !== 'cancelled',
       )
-      .map((a) => a.time);
-  }, [allAppointments, values.doctorId, values.date, initialValues?.id]);
+      .map((a) => a.appointmentTime);
+  }, [allAppointments, values.doctorId, values.appointmentDate, initialValues?.id]);
 
   const patientOptions = patients.map((p) => ({
     value: p.id,
@@ -86,17 +79,17 @@ const AppointmentForm = ({
   const validateAll = (vals) => ({
     patientId: validateRequired(vals.patientId, 'Patient'),
     doctorId: validateRequired(vals.doctorId, 'Doctor'),
-    date: validateRequired(vals.date, 'Date'),
-    time: validateRequired(vals.time, 'Time slot'),
+    appointmentDate: validateRequired(vals.appointmentDate, 'Date'),
+    appointmentTime: validateRequired(vals.appointmentTime, 'Time slot'),
     reason: validateRequired(vals.reason, 'Reason for visit'),
   });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     const next = { ...values, [name]: value };
-    if (name === 'doctorId' && next.time) {
+    if (name === 'doctorId' && next.appointmentTime) {
       // Reset time when switching doctor - schedule may differ
-      next.time = '';
+      next.appointmentTime = '';
     }
     setValues(next);
     if (touched[name]) setErrors(validateAll(next));
@@ -116,7 +109,7 @@ const AppointmentForm = ({
     if (Object.values(allErrors).some(Boolean)) return;
     setIsSubmitting(true);
     try {
-      await onSubmit({ ...values, duration: Number(values.duration) });
+      await onSubmit(values);
     } finally {
       setIsSubmitting(false);
     }
@@ -149,31 +142,12 @@ const AppointmentForm = ({
         />
         <DateInput
           label="Appointment date"
-          name="date"
-          value={values.date}
+          name="appointmentDate"
+          value={values.appointmentDate}
           onChange={handleChange}
           onBlur={handleBlur}
           required
-          error={touched.date ? errors.date : ''}
-        />
-        <Select
-          label="Duration (minutes)"
-          name="duration"
-          value={String(values.duration)}
-          options={[
-            { value: '15', label: '15 min' },
-            { value: '30', label: '30 min' },
-            { value: '45', label: '45 min' },
-            { value: '60', label: '60 min' },
-          ]}
-          onChange={handleChange}
-        />
-        <Select
-          label="Consultation mode"
-          name="mode"
-          value={values.mode}
-          options={MODE_OPTIONS}
-          onChange={handleChange}
+          error={touched.appointmentDate ? errors.appointmentDate : ''}
         />
         <Select
           label="Status"
@@ -198,11 +172,11 @@ const AppointmentForm = ({
           endTime={doctor?.schedule?.endTime}
           slotMinutes={doctor?.schedule?.slotMinutes || 30}
           takenSlots={takenSlots}
-          value={values.time}
-          onChange={(slot) => setValues({ ...values, time: slot })}
+          value={values.appointmentTime}
+          onChange={(slot) => setValues({ ...values, appointmentTime: slot })}
         />
-        {touched.time && errors.time && (
-          <p className="appointment-form__error">{errors.time}</p>
+        {touched.appointmentTime && errors.appointmentTime && (
+          <p className="appointment-form__error">{errors.appointmentTime}</p>
         )}
       </div>
 

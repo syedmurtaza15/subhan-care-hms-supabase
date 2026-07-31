@@ -109,7 +109,7 @@ const InvoiceReceiptPage = () => {
           <h1>{invoice.id}</h1>
           <p>
             Issued to <strong>{patient?.name || 'Unknown patient'}</strong> on{' '}
-            {formatDate(invoice.issuedAt)}.
+            {formatDate(invoice.invoiceDate)}.
           </p>
         </div>
         <div className="receipt-page__actions">
@@ -148,8 +148,7 @@ const InvoiceReceiptPage = () => {
             <p>
               Invoice <strong>{invoice.id}</strong>
             </p>
-            <p>Issued {formatDate(invoice.issuedAt)}</p>
-            <p>Due {formatDate(invoice.dueAt)}</p>
+            <p>Issued {formatDate(invoice.invoiceDate)}</p>
             <StatusBadge tone={invoice.status}>{invoice.status}</StatusBadge>
           </div>
         </div>
@@ -178,7 +177,7 @@ const InvoiceReceiptPage = () => {
               </tr>
             </thead>
             <tbody>
-              {invoice.items.map((item, index) => (
+              {(Array.isArray(invoice.items) ? invoice.items : []).map((item, index) => (
                 <tr key={index}>
                   <td>{item.description}</td>
                   <td>{item.quantity}</td>
@@ -195,15 +194,15 @@ const InvoiceReceiptPage = () => {
         <div className="receipt-page__totals">
           <div>
             <span>Subtotal</span>
-            <strong>Rs {invoice.subtotal.toLocaleString()}</strong>
+            <strong>Rs {Number(invoice.subtotal || 0).toLocaleString()}</strong>
           </div>
           <div>
             <span>Tax</span>
-            <strong>Rs {invoice.tax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
+            <strong>Rs {Number(invoice.tax || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
           </div>
           <div className="receipt-page__grand">
             <span>Total</span>
-            <strong>Rs {invoice.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
+            <strong>Rs {Number(invoice.total || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
           </div>
           <div>
             <span>Amount paid</span>

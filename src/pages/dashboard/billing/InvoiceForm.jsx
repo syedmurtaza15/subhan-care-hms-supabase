@@ -25,26 +25,14 @@ const STATUS_OPTIONS = [
 
 const TAX_RATE = 0.05;
 
-const generateId = () =>
-  `INV-${Date.now().toString().slice(-4)}${Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, '0')}`;
-
 const InvoiceForm = ({ initialValues, patients = [], onSubmit, onCancel }) => {
   const [values, setValues] = useState(() => {
     const today = new Date();
-    const due = new Date(today);
-    due.setDate(today.getDate() + 14);
     return {
-      id: initialValues?.id || generateId(),
       patientId: initialValues?.patientId || patients[0]?.id || '',
-      appointmentId: initialValues?.appointmentId || '',
-      issuedAt: initialValues?.issuedAt
-        ? new Date(initialValues.issuedAt).toISOString().split('T')[0]
+      invoiceDate: initialValues?.invoiceDate
+        ? new Date(initialValues.invoiceDate).toISOString().split('T')[0]
         : today.toISOString().split('T')[0],
-      dueAt: initialValues?.dueAt
-        ? new Date(initialValues.dueAt).toISOString().split('T')[0]
-        : due.toISOString().split('T')[0],
       status: initialValues?.status || 'unpaid',
       paymentMethod: initialValues?.paymentMethod || 'cash',
       amountPaid: initialValues?.amountPaid || 0,
@@ -74,8 +62,7 @@ const InvoiceForm = ({ initialValues, patients = [], onSubmit, onCancel }) => {
   const validateAll = (vals) => {
     const errs = {
       patientId: validateRequired(vals.patientId, 'Patient'),
-      issuedAt: validateRequired(vals.issuedAt, 'Issue date'),
-      dueAt: validateRequired(vals.dueAt, 'Due date'),
+      invoiceDate: validateRequired(vals.invoiceDate, 'Invoice date'),
     };
     if (vals.items.length === 0 || vals.items.every((i) => !i.description)) {
       errs.items = 'Add at least one item';
@@ -132,8 +119,7 @@ const InvoiceForm = ({ initialValues, patients = [], onSubmit, onCancel }) => {
         tax,
         total,
         amountPaid: Number(values.amountPaid) || 0,
-        issuedAt: new Date(values.issuedAt).toISOString(),
-        dueAt: new Date(values.dueAt).toISOString(),
+        invoiceDate: new Date(values.invoiceDate).toISOString(),
       });
     } finally {
       setIsSubmitting(false);
@@ -143,13 +129,6 @@ const InvoiceForm = ({ initialValues, patients = [], onSubmit, onCancel }) => {
   return (
     <form className="invoice-form" onSubmit={handleSubmit} noValidate>
       <div className="invoice-form__grid">
-        <Input
-          label="Invoice ID"
-          name="id"
-          value={values.id}
-          onChange={handleChange}
-          disabled
-        />
         <Select
           label="Patient"
           name="patientId"
@@ -163,21 +142,12 @@ const InvoiceForm = ({ initialValues, patients = [], onSubmit, onCancel }) => {
         />
         <DateInput
           label="Issue date"
-          name="issuedAt"
-          value={values.issuedAt}
+          name="invoiceDate"
+          value={values.invoiceDate}
           onChange={handleChange}
           onBlur={handleBlur}
           required
-          error={touched.issuedAt ? errors.issuedAt : ''}
-        />
-        <DateInput
-          label="Due date"
-          name="dueAt"
-          value={values.dueAt}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          required
-          error={touched.dueAt ? errors.dueAt : ''}
+          error={touched.invoiceDate ? errors.invoiceDate : ''}
         />
         <Select
           label="Payment method"

@@ -35,11 +35,6 @@ const SUPPLIER_OPTIONS = [
   { value: 'SafeHealth', label: 'SafeHealth' },
 ];
 
-const generateId = () =>
-  `INV-${Date.now().toString(36).toUpperCase().slice(-4)}${Math.floor(Math.random() * 100)
-    .toString()
-    .padStart(2, '0')}`;
-
 const deriveStatus = (stock, reorderLevel) => {
   if (stock <= 0) return 'out-of-stock';
   if (stock <= reorderLevel) return 'low-stock';
@@ -52,9 +47,7 @@ const InventoryForm = ({ initialValues, onSubmit, onCancel }) => {
     const inOneYear = new Date(today);
     inOneYear.setFullYear(today.getFullYear() + 1);
     return {
-      id: initialValues?.id || generateId(),
-      name: initialValues?.name || '',
-      sku: initialValues?.sku || '',
+      itemName: initialValues?.itemName || '',
       category: initialValues?.category || 'Medication',
       stock: initialValues?.stock || 0,
       reorderLevel: initialValues?.reorderLevel || 10,
@@ -71,8 +64,7 @@ const InventoryForm = ({ initialValues, onSubmit, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateAll = (vals) => ({
-    name: validateRequired(vals.name, 'Item name'),
-    sku: validateRequired(vals.sku, 'SKU'),
+    itemName: validateRequired(vals.itemName, 'Item name'),
     stock: isEmpty(vals.stock) ? 'Stock is required' : Number(vals.stock) < 0 ? 'Stock cannot be negative' : '',
     reorderLevel: isEmpty(vals.reorderLevel) ? 'Reorder level is required' : Number(vals.reorderLevel) < 0 ? 'Must be non-negative' : '',
     unitPrice: isEmpty(vals.unitPrice) ? 'Unit price is required' : Number(vals.unitPrice) < 0 ? 'Price cannot be negative' : '',
@@ -119,23 +111,13 @@ const InventoryForm = ({ initialValues, onSubmit, onCancel }) => {
       <div className="inventory-form__grid">
         <Input
           label="Item name"
-          name="name"
-          value={values.name}
+          name="itemName"
+          value={values.itemName}
           onChange={handleChange}
           onBlur={handleBlur}
           placeholder="e.g. Amlodipine 5mg"
           required
-          error={touched.name ? errors.name : ''}
-        />
-        <Input
-          label="SKU"
-          name="sku"
-          value={values.sku}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="e.g. MED-AML-05"
-          required
-          error={touched.sku ? errors.sku : ''}
+          error={touched.itemName ? errors.itemName : ''}
         />
         <Select
           label="Category"

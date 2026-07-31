@@ -62,11 +62,11 @@ const BillingPage = () => {
 
   const stats = useMemo(() => {
     const list = invoices.list();
-    const totalBilled = list.reduce((acc, inv) => acc + inv.total, 0);
-    const totalCollected = list.reduce((acc, inv) => acc + (inv.amountPaid || 0), 0);
+    const totalBilled = list.reduce((acc, inv) => acc + Number(inv.total || 0), 0);
+    const totalCollected = list.reduce((acc, inv) => acc + Number(inv.amountPaid || 0), 0);
     const outstanding = list
       .filter((inv) => inv.status === 'unpaid' || inv.status === 'overdue' || inv.status === 'partial')
-      .reduce((acc, inv) => acc + (inv.total - (inv.amountPaid || 0)), 0);
+      .reduce((acc, inv) => acc + (Number(inv.total || 0) - Number(inv.amountPaid || 0)), 0);
     const overdue = list.filter((inv) => inv.status === 'overdue').length;
     return { totalBilled, totalCollected, outstanding, overdue, count: list.length };
   }, [invoices]);
@@ -77,7 +77,7 @@ const BillingPage = () => {
     const term = searchTerm.trim().toLowerCase();
     return invoices.list().filter((inv) => {
       if (term) {
-        const haystack = `${inv.id} ${patientName(inv.patientId)} ${inv.items.map((i) => i.description).join(' ')}`.toLowerCase();
+        const haystack = `${inv.id} ${patientName(inv.patientId)} ${inv.notes || ''}`.toLowerCase();
         if (!haystack.includes(term)) return false;
       }
       if (filters.status !== 'all' && inv.status !== filters.status) return false;
@@ -86,7 +86,7 @@ const BillingPage = () => {
   }, [invoices, searchTerm, filters, patients]);
 
   const sorted = useMemo(
-    () => filtered.slice().sort((a, b) => (b.issuedAt || '').localeCompare(a.issuedAt || '')),
+    () => filtered.slice().sort((a, b) => (b.invoiceDate || '').localeCompare(a.invoiceDate || '')),
     [filtered],
   );
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
@@ -100,7 +100,7 @@ const BillingPage = () => {
       invoices
         .list()
         .filter((inv) => inv.status === 'unpaid' || inv.status === 'overdue' || inv.status === 'partial')
-        .sort((a, b) => (b.issuedAt || '').localeCompare(a.issuedAt || '')),
+        .sort((a, b) => (b.invoiceDate || '').localeCompare(a.invoiceDate || '')),
     [invoices],
   );
 
@@ -223,8 +223,8 @@ const BillingPage = () => {
                     </Link>
                   </td>
                   <td>{patientName(inv.patientId)}</td>
-                  <td>{formatDate(inv.issuedAt)}</td>
-                  <td>Rs {inv.total.toLocaleString()}</td>
+                  <td>{formatDate(inv.invoiceDate)}</td>
+                  <td>Rs {Number(inv.total || 0).toLocaleString()}</td>
                   <td>Rs {(inv.amountPaid || 0).toLocaleString()}</td>
                   <td>
                     <span className="billing-page__method">{inv.paymentMethod || '—'}</span>
@@ -308,7 +308,7 @@ const BillingPage = () => {
                   <p className="billing-page__outstanding-patient">{patientName(inv.patientId)}</p>
                 </div>
                 <div className="billing-page__outstanding-side">
-                  <span>Rs {(inv.total - (inv.amountPaid || 0)).toLocaleString()} due</span>
+                  <span>Rs {(Number(inv.total || 0) - Number(inv.amountPaid || 0)).toLocaleString()} due</span>
                   <StatusBadge tone={inv.status}>{inv.status}</StatusBadge>
                 </div>
               </li>

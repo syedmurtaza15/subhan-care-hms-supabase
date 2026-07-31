@@ -79,7 +79,7 @@ const InventoryPage = () => {
     const term = searchTerm.trim().toLowerCase();
     return inventory.list().filter((i) => {
       if (term) {
-        const haystack = `${i.name} ${i.sku} ${i.category} ${i.supplier}`.toLowerCase();
+        const haystack = `${i.itemName || ''} ${i.category || ''} ${i.supplier || ''}`.toLowerCase();
         if (!haystack.includes(term)) return false;
       }
       if (filters.category !== 'all' && i.category !== filters.category) return false;
@@ -89,7 +89,7 @@ const InventoryPage = () => {
   }, [inventory, searchTerm, filters]);
 
   const sorted = useMemo(
-    () => filtered.slice().sort((a, b) => a.name.localeCompare(b.name)),
+    () => filtered.slice().sort((a, b) => (a.itemName || '').localeCompare(b.itemName || '')),
     [filtered],
   );
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
@@ -100,20 +100,20 @@ const InventoryPage = () => {
 
   const handleCreate = async (values) => {
     const created = await inventory.create(values);
-    toast.success('Item added', `${created.name} is now in inventory.`);
+    toast.success('Item added', `${created.itemName} is now in inventory.`);
     setCreateOpen(false);
   };
 
   const handleEdit = async (values) => {
     const updated = await inventory.update(editing.id, values);
-    toast.success('Item updated', `${updated.name} saved.`);
+    toast.success('Item updated', `${updated.itemName} saved.`);
     setEditing(null);
   };
 
   const handleDelete = async () => {
     if (!deleting) return;
     await inventory.remove(deleting.id);
-    toast.success('Item removed', `${deleting.name} was deleted from inventory.`);
+    toast.success('Item removed', `${deleting.itemName} was deleted from inventory.`);
     setDeleting(null);
   };
 
@@ -122,7 +122,7 @@ const InventoryPage = () => {
     const newStock = Math.max(0, adjusting.stock + Number(adjustDelta || 0));
     const status = deriveStatus(newStock, adjusting.reorderLevel);
     await inventory.update(adjusting.id, { stock: newStock, status });
-    toast.success('Stock adjusted', `${adjusting.name} now at ${newStock} ${adjusting.unit}.`);
+    toast.success('Stock adjusted', `${adjusting.itemName} now at ${newStock} ${adjusting.unit || 'units'}.`);
     setAdjusting(null);
     setAdjustDelta(0);
   };
@@ -256,15 +256,15 @@ const InventoryPage = () => {
                       <span className="inventory-page__icon-cell">
                         <Package size={14} />
                       </span>
-                      <strong>{item.name}</strong>
+                      <strong>{item.itemName || 'Unnamed item'}</strong>
                     </div>
                   </td>
                   <td>
-                    <span className="inventory-page__sku">{item.sku}</span>
+                    <span className="inventory-page__sku">—</span>
                   </td>
                   <td>
-                    <span className={`inventory-page__cat inventory-page__cat--${item.category.toLowerCase()}`}>
-                      {item.category}
+                    <span className={`inventory-page__cat inventory-page__cat--${(item.category || 'other').toLowerCase()}`}>
+                      {item.category || 'Other'}
                     </span>
                   </td>
                   <td>
@@ -366,7 +366,7 @@ const InventoryPage = () => {
           setEditing(null);
         }}
         title={editing ? 'Edit inventory item' : 'Add inventory item'}
-        subtitle={editing ? `Update ${editing.name}.` : 'Add a new medication or supply to inventory.'}
+        subtitle={editing ? `Update ${editing.itemName}.` : 'Add a new medication or supply to inventory.'}
         size="lg"
       >
         <InventoryForm
@@ -386,7 +386,7 @@ const InventoryPage = () => {
           setAdjustDelta(0);
         }}
         title="Adjust stock"
-        subtitle={adjusting ? `Update quantity for ${adjusting.name}.` : ''}
+        subtitle={adjusting ? `Update quantity for ${adjusting.itemName}.` : ''}
         size="sm"
       >
         {adjusting && (
@@ -432,7 +432,7 @@ const InventoryPage = () => {
         confirmLabel="Delete item"
         body={
           <>
-            You&apos;re about to remove <strong>{deleting?.name}</strong> ({deleting?.sku}) from
+            You&apos;re about to remove <strong>{deleting?.itemName}</strong> from
             inventory. This action cannot be undone.
           </>
         }

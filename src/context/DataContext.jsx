@@ -26,6 +26,7 @@ export const DataProvider = ({ children }) => {
   );
   const [invoices, setInvoices] = useState(() => dataService.list(ENTITIES.INVOICES));
   const [staff, setStaff] = useState(() => dataService.list(ENTITIES.STAFF));
+  const [profiles, setProfiles] = useState(() => dataService.list(ENTITIES.PROFILES));
   const [prescriptions, setPrescriptions] = useState(() =>
     dataService.list(ENTITIES.PRESCRIPTIONS),
   );
@@ -59,6 +60,7 @@ export const DataProvider = ({ children }) => {
           setAppointments(dataService.list(ENTITIES.APPOINTMENTS));
           setInvoices(dataService.list(ENTITIES.INVOICES));
           setStaff(dataService.list(ENTITIES.STAFF));
+          setProfiles(dataService.list(ENTITIES.PROFILES));
           setPrescriptions(dataService.list(ENTITIES.PRESCRIPTIONS));
           setInventory(dataService.list(ENTITIES.INVENTORY));
           setMedicalHistory(dataService.list(ENTITIES.MEDICAL_HISTORY));
@@ -82,6 +84,7 @@ export const DataProvider = ({ children }) => {
     setAppointments(dataService.list(ENTITIES.APPOINTMENTS));
     setInvoices(dataService.list(ENTITIES.INVOICES));
     setStaff(dataService.list(ENTITIES.STAFF));
+    setProfiles(dataService.list(ENTITIES.PROFILES));
     setPrescriptions(dataService.list(ENTITIES.PRESCRIPTIONS));
     setInventory(dataService.list(ENTITIES.INVENTORY));
     setMedicalHistory(dataService.list(ENTITIES.MEDICAL_HISTORY));
@@ -133,6 +136,7 @@ export const DataProvider = ({ children }) => {
       [ENTITIES.APPOINTMENTS]: wrap(ENTITIES.APPOINTMENTS, setAppointments),
       [ENTITIES.INVOICES]: wrap(ENTITIES.INVOICES, setInvoices),
       [ENTITIES.STAFF]: wrap(ENTITIES.STAFF, setStaff),
+      [ENTITIES.PROFILES]: wrap(ENTITIES.PROFILES, setProfiles),
       [ENTITIES.PRESCRIPTIONS]: wrap(ENTITIES.PRESCRIPTIONS, setPrescriptions),
       [ENTITIES.INVENTORY]: wrap(ENTITIES.INVENTORY, setInventory),
       [ENTITIES.MEDICAL_HISTORY]: wrap(ENTITIES.MEDICAL_HISTORY, setMedicalHistory),
@@ -157,6 +161,7 @@ export const useDoctors = createEntityHook(ENTITIES.DOCTORS);
 export const useAppointments = createEntityHook(ENTITIES.APPOINTMENTS);
 export const useInvoices = createEntityHook(ENTITIES.INVOICES);
 export const useStaff = createEntityHook(ENTITIES.STAFF);
+export const useProfiles = createEntityHook(ENTITIES.PROFILES);
 export const usePrescriptions = createEntityHook(ENTITIES.PRESCRIPTIONS);
 export const useInventory = createEntityHook(ENTITIES.INVENTORY);
 export const useMedicalHistory = createEntityHook(ENTITIES.MEDICAL_HISTORY);

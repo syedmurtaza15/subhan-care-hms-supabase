@@ -6,13 +6,11 @@ import {
   Users,
   Briefcase,
   Mail,
-  Phone,
 } from 'lucide-react';
 import {
   Button,
   Card,
   ConfirmDialog,
-  DateInput,
   EmptyState,
   Input,
   Modal,
@@ -41,15 +39,15 @@ const StaffForm = ({ initialValues, onSubmit, onCancel }) => {
     role: initialValues?.role || 'RECEPTIONIST',
     email: initialValues?.email || '',
     phone: initialValues?.phone || '',
-    department: initialValues?.department || 'Operations',
+    department: initialValues?.department || '',
     joinDate: initialValues?.joinDate || new Date().toISOString().split('T')[0],
-    status: initialValues?.status || 'active',
+    status: initialValues?.status || 'ACTIVE',
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!values.name || !values.email) return;
+    if (!values.name || !values.role) return;
     setIsSubmitting(true);
     try {
       await onSubmit(values);
@@ -66,7 +64,6 @@ const StaffForm = ({ initialValues, onSubmit, onCancel }) => {
         <Input label="Email" name="email" type="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} required />
         <Input label="Phone" name="phone" value={values.phone} onChange={(e) => setValues({ ...values, phone: e.target.value })} />
         <Input label="Department" name="department" value={values.department} onChange={(e) => setValues({ ...values, department: e.target.value })} />
-        <DateInput label="Join date" name="joinDate" value={values.joinDate} onChange={(e) => setValues({ ...values, joinDate: e.target.value })} />
       </div>
       <div className="staff-form__actions">
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
@@ -90,8 +87,8 @@ const StaffPage = () => {
     const list = staff.list();
     return {
       total: list.length,
-      active: list.filter((s) => s.status === 'active').length,
-      departments: new Set(list.map((s) => s.department)).size,
+      active: list.length,
+      departments: new Set(list.map((s) => s.role)).size,
     };
   }, [staff]);
 
@@ -99,7 +96,7 @@ const StaffPage = () => {
     const term = searchTerm.trim().toLowerCase();
     return staff.list().filter((s) => {
       if (!term) return true;
-      const haystack = `${s.name} ${s.email} ${s.role} ${s.department}`.toLowerCase();
+      const haystack = `${s.name || ''} ${s.email || ''} ${s.role || ''}`.toLowerCase();
       return haystack.includes(term);
     });
   }, [staff, searchTerm]);
@@ -113,8 +110,8 @@ const StaffPage = () => {
   const roleLabel = (role) => ROLE_OPTIONS.find((r) => r.value === role)?.label || role;
 
   const handleCreate = async (values) => {
-    await staff.create({ ...values, status: 'active' });
-    toast.success('Staff added', `${values.name} is now on the team.`);
+    await staff.create(values);
+    toast.success('Staff added', `${values.name} is now in the directory.`);
     setCreateOpen(false);
   };
 
@@ -199,20 +196,20 @@ const StaffPage = () => {
                 <tr key={member.id}>
                   <td>
                     <div className="staff-page__name">
-                      <span className="staff-page__avatar">{initialsFromName(member.name)}</span>
+                      <span className="staff-page__avatar">{initialsFromName(member.name || 'User')}</span>
                       <span>
-                        <strong>{member.name}</strong>
+                        <strong>{member.name || 'Unnamed user'}</strong>
                         <small>{member.id}</small>
                       </span>
                     </div>
                   </td>
+                  <td>{member.department || '—'}</td>
                   <td>{roleLabel(member.role)}</td>
-                  <td>{member.department}</td>
                   <td>{member.email}</td>
-                  <td>{member.phone}</td>
-                  <td>{formatDate(member.joinDate)}</td>
+                  <td>{member.phone || '—'}</td>
+                  <td>{formatDate(member.createdAt)}</td>
                   <td>
-                    <StatusBadge tone={member.status}>{member.status}</StatusBadge>
+                    <StatusBadge tone={(member.status || '').toLowerCase() === 'active' ? 'active' : 'pending'}>{member.status || 'ACTIVE'}</StatusBadge>
                   </td>
                   <td>
                     <div className="staff-page__row-actions">
@@ -269,7 +266,7 @@ const StaffPage = () => {
           setEditing(null);
         }}
         title={editing ? 'Edit staff' : 'Add staff member'}
-        subtitle={editing ? `Update ${editing.name}'s profile.` : 'Bring a new team member onto Subhan Care.'}
+        subtitle={editing ? `Update ${editing.name}'s profile.` : 'Add a staff member to the directory.'}
         size="lg"
       >
         <StaffForm

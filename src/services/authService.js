@@ -95,7 +95,7 @@ const profileFromAuthUser = (authUser, profileRow) => {
   const role = normalizeRole(profileRow?.role);
   return buildUser({
     email: authUser.email,
-    name: profileRow?.name || authUser.user_metadata?.name,
+    name: profileRow?.full_name || authUser.user_metadata?.name,
     role,
   });
 };

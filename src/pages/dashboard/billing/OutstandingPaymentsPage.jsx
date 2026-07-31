@@ -29,7 +29,7 @@ const OutstandingPaymentsPage = () => {
       .filter(
         (inv) => inv.status === 'unpaid' || inv.status === 'overdue' || inv.status === 'partial',
       )
-      .sort((a, b) => (b.issuedAt || '').localeCompare(a.issuedAt || ''));
+      .sort((a, b) => (b.invoiceDate || '').localeCompare(a.invoiceDate || ''));
   }, [invoices]);
 
   const totalDue = outstanding.reduce(
@@ -90,7 +90,7 @@ const OutstandingPaymentsPage = () => {
                     </Link>
                     <span className="outstanding-page__meta">
                       <Calendar size={11} aria-hidden="true" />
-                      Issued {formatDate(inv.issuedAt)}
+                      Issued {formatDate(inv.invoiceDate)}
                     </span>
                   </div>
                   <div className="outstanding-page__patient">

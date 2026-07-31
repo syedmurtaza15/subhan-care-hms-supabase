@@ -20,6 +20,7 @@ const LS_KEYS = {
   appointments: 'subhan_care.appointments',
   invoices: 'subhan_care.invoices',
   staff: 'subhan_care.staff',
+  profiles: 'subhan_care.profiles',
   prescriptions: 'subhan_care.prescriptions',
   inventory: 'subhan_care.inventory',
   medicalHistory: 'subhan_care.medical_history',
@@ -31,6 +32,7 @@ export const ENTITIES = Object.freeze({
   APPOINTMENTS: 'appointments',
   INVOICES: 'invoices',
   STAFF: 'staff',
+  PROFILES: 'profiles',
   PRESCRIPTIONS: 'prescriptions',
   INVENTORY: 'inventory',
   MEDICAL_HISTORY: 'medical_history',
@@ -43,6 +45,7 @@ const cache = {
   appointments: [],
   invoices: [],
   staff: [],
+  profiles: [],
   prescriptions: [],
   inventory: [],
   medicalHistory: [],
@@ -102,15 +105,17 @@ export const refreshAll = async () => {
     { data: appointments, error: e3 },
     { data: invoices, error: e4 },
     { data: staff, error: e5 },
-    { data: prescriptions, error: e6 },
-    { data: inventory, error: e7 },
-    { data: medicalHistory, error: e8 },
+    { data: profiles, error: e6 },
+    { data: prescriptions, error: e7 },
+    { data: inventory, error: e8 },
+    { data: medicalHistory, error: e9 },
   ] = await Promise.all([
     supabase.from('patients').select('*').order('created_at', { ascending: false }),
     supabase.from('doctors').select('*').order('created_at', { ascending: false }),
     supabase.from('appointments').select('*').order('created_at', { ascending: false }),
     supabase.from('invoices').select('*').order('created_at', { ascending: false }),
     supabase.from('staff').select('*').order('created_at', { ascending: false }),
+    supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     supabase.from('prescriptions').select('*').order('created_at', { ascending: false }),
     supabase.from('inventory').select('*').order('created_at', { ascending: false }),
     supabase.from('medical_history').select('*').order('created_at', { ascending: false }),
@@ -120,17 +125,19 @@ export const refreshAll = async () => {
   throwIfError(e3, 'appointments');
   throwIfError(e4, 'invoices');
   throwIfError(e5, 'staff');
-  throwIfError(e6, 'prescriptions');
-  throwIfError(e7, 'inventory');
-  throwIfError(e8, 'medical_history');
-  cache.patients = patients || [];
-  cache.doctors = doctors || [];
-  cache.appointments = appointments || [];
-  cache.invoices = invoices || [];
-  cache.staff = staff || [];
-  cache.prescriptions = prescriptions || [];
-  cache.inventory = inventory || [];
-  cache.medicalHistory = medicalHistory || [];
+  throwIfError(e6, 'profiles');
+  throwIfError(e7, 'prescriptions');
+  throwIfError(e8, 'inventory');
+  throwIfError(e9, 'medical_history');
+  cache.patients = (patients || []).map((row) => fromRow(ENTITIES.PATIENTS, row));
+  cache.doctors = (doctors || []).map((row) => fromRow(ENTITIES.DOCTORS, row));
+  cache.appointments = (appointments || []).map((row) => fromRow(ENTITIES.APPOINTMENTS, row));
+  cache.invoices = (invoices || []).map((row) => fromRow(ENTITIES.INVOICES, row));
+  cache.staff = (staff || []).map((row) => fromRow(ENTITIES.STAFF, row));
+  cache.profiles = (profiles || []).map((row) => fromRow(ENTITIES.PROFILES, row));
+  cache.prescriptions = (prescriptions || []).map((row) => fromRow(ENTITIES.PRESCRIPTIONS, row));
+  cache.inventory = (inventory || []).map((row) => fromRow(ENTITIES.INVENTORY, row));
+  cache.medicalHistory = (medicalHistory || []).map((row) => fromRow(ENTITIES.MEDICAL_HISTORY, row));
   notify();
 };
 
@@ -141,294 +148,170 @@ if (!isSupabaseConfigured) {
   cache.appointments = readLsCollection(ENTITIES.APPOINTMENTS);
   cache.invoices = readLsCollection(ENTITIES.INVOICES);
   cache.staff = readLsCollection(ENTITIES.STAFF);
+  cache.profiles = readLsCollection(ENTITIES.PROFILES);
   cache.prescriptions = readLsCollection(ENTITIES.PRESCRIPTIONS);
   cache.inventory = readLsCollection(ENTITIES.INVENTORY);
   cache.medicalHistory = readLsCollection(ENTITIES.MEDICAL_HISTORY);
 }
 
-// Snake_case <-> camelCase mapper for the medical_history table.
-
-const fromRow = (entity, row) => {
-
-  if (!row) return row;
-
-
-  if (entity === ENTITIES.MEDICAL_HISTORY) {
-
-    return {
-
-      id: row.id,
-
-      patientId: row.patient_id,
-
-      type: row.type,
-
-      title: row.title,
-
-      description: row.description,
-
-      date: row.date,
-
-      doctorId: row.doctor_id,
-
-      attachments: row.attachments || [],
-
-      createdAt: row.created_at,
-
-      updatedAt: row.updated_at,
-
-    };
-
-  }
-
-
-  if (entity === ENTITIES.PATIENTS) {
-
-    return {
-
-      id: row.id,
-
-      name: row.name,
-
-      age: row.age,
-
-      gender: row.gender,
-
-      phone: row.phone,
-
-      email: row.email,
-
-      bloodGroup: row.blood_group,
-
-      address: row.address,
-
-      emergencyContact: row.emergency_contact,
-
-      allergies: row.allergies,
-
-      assignedDoctor: row.assigned_doctor,
-
-      notes: row.notes,
-
-      status: row.status,
-
-      createdAt: row.created_at,
-
-      updatedAt: row.updated_at,
-
-    };
-
-  }
-
-
-if (entity === ENTITIES.APPOINTMENTS) {
-
-  return {
-
-  id: row.id,
-
-  patientId: row.patient_id,
-  doctorId: row.doctor_id,
-
-  appointmentDate: row.appointment_date,
-  appointmentTime: row.appointment_time,
-
-  type: row.type,
-  status: row.status,
-
-  reason: row.reason,
-  notes: row.notes,
-
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
+// The UI uses camelCase while PostgREST exposes the database's snake_case
+// columns. Keep this conversion in one place so pages never need to know the
+// database schema.
+const FIELD_MAPS = {
+  [ENTITIES.PATIENTS]: {
+    bloodGroup: 'blood_group', emergencyContact: 'emergency_contact', assignedDoctor: 'assigned_doctor',
+  },
+  [ENTITIES.DOCTORS]: { consultationFee: 'consultation_fee' },
+  [ENTITIES.APPOINTMENTS]: {
+    patientId: 'patient_id', doctorId: 'doctor_id', appointmentDate: 'appointment_date', appointmentTime: 'appointment_time',
+  },
+  [ENTITIES.INVOICES]: {
+    patientId: 'patient_id', appointmentId: 'appointment_id', invoiceDate: 'invoice_date',
+    amountPaid: 'amount_paid', paymentMethod: 'payment_method',
+  },
+  [ENTITIES.INVENTORY]: { itemName: 'item_name', reorderLevel: 'reorder_level', unitPrice: 'unit_price', expiryDate: 'expiry_date' },
+  [ENTITIES.STAFF]: { joinDate: 'joining_date' },
+  [ENTITIES.PRESCRIPTIONS]: {
+    patientId: 'patient_id', doctorId: 'doctor_id', appointmentId: 'appointment_id', issuedAt: 'issued_at',
+  },
+  [ENTITIES.MEDICAL_HISTORY]: { patientId: 'patient_id', doctorId: 'doctor_id' },
+  [ENTITIES.PROFILES]: { fullName: 'full_name', avatarUrl: 'avatar_url' },
 };
 
-}
+const INVOICE_NOTES_PREFIX = '__HMS_INVOICE__:';
 
+const fromRow = (entity, row) => {
+  if (!row) return row;
 
- if (entity === ENTITIES.DOCTORS) {
-  console.log("Doctor row from Supabase:", row);
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    phone: row.phone,
-    specialization: row.specialization,
-    qualification: row.qualification,
-    experience: row.experience,
-    consultationFee: Number(row.consultation_fee || 0),
+  const result = { ...row };
+  Object.entries(FIELD_MAPS[entity] || {}).forEach(([camelKey, snakeKey]) => {
+    if (Object.prototype.hasOwnProperty.call(row, snakeKey)) result[camelKey] = row[snakeKey];
+    delete result[snakeKey];
+  });
+  result.createdAt = row.created_at || row.createdAt;
+  result.updatedAt = row.updated_at || row.updatedAt;
+  delete result.created_at;
+  delete result.updated_at;
 
-    availability: Array.isArray(row.availability)
-      ? row.availability
-      : row.availability
-        ? row.availability.split(',')
-        : [],
+  if (entity === ENTITIES.DOCTORS) {
+    result.consultationFee = Number(result.consultationFee || 0);
+    result.availability = Array.isArray(result.availability)
+      ? result.availability
+      : result.availability ? result.availability.split(',') : [];
+  }
 
-    status: row.status,
-    notes: row.notes,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
+  if (entity === ENTITIES.APPOINTMENTS) {
+    result.appointmentDate = row.appointment_date || '';
+    result.appointmentTime = row.appointment_time || '';
+    // Temporary display aliases keep older routes safe while they consume the
+    // canonical appointmentDate / appointmentTime fields.
+    result.date = result.appointmentDate;
+    result.time = result.appointmentTime;
+  }
 
-  if (entity === ENTITIES.PRESCRIPTIONS) {
-  return {
-    id: row.id,
+  if (entity === ENTITIES.PRESCRIPTIONS) result.items = Array.isArray(result.items) ? result.items : [];
+  if (entity === ENTITIES.INVENTORY) {
+    result.itemName = result.itemName || '';
+    result.stock = Number(result.stock || 0);
+    result.reorderLevel = Number(result.reorderLevel || 0);
+    result.unitPrice = Number(result.unitPrice || 0);
+    result.name = result.itemName;
+  }
+  if (entity === ENTITIES.INVOICES) {
+    result.subtotal = Number(result.subtotal || 0);
+    result.tax = Number(result.tax || 0);
+    result.total = Number(result.total || 0);
+    result.amountPaid = Number(result.amountPaid || 0);
+    result.items = [];
+    if (typeof row.notes === 'string' && row.notes.startsWith(INVOICE_NOTES_PREFIX)) {
+      try {
+        const stored = JSON.parse(row.notes.slice(INVOICE_NOTES_PREFIX.length));
+        result.items = Array.isArray(stored.items) ? stored.items : [];
+        result.notes = stored.notes || '';
+      } catch {
+        result.items = [];
+      }
+    }
+    result.issuedAt = result.invoiceDate;
+    result.dueAt = result.invoiceDate;
+  }
+  if (entity === ENTITIES.MEDICAL_HISTORY) {
+    // Support both the current database fields and the fields used by the UI.
+    result.recordedAt = row.recorded_at || row.date;
+    result.recordedBy = row.recorded_by || row.doctor_name || '';
+    result.summary = row.summary || row.description || '';
+    result.details = row.details || '';
+  }
 
-    patientId: row.patient_id,
-    doctorId: row.doctor_id,
-    appointmentId: row.appointment_id,
-
-    medicine: row.medicine,
-
-    dosage: row.dosage,
-    frequency: row.frequency,
-    duration: row.duration,
-    instructions: row.instructions,
-
-    notes: row.notes,
-    diagnosis: row.diagnosis,
-
-    items: row.items || [],
-
-    status: row.status,
-
-    issuedAt: row.issued_at,
-
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-  return {
-
-    id: row.id,
-
-    ...row,
-
-    createdAt: row.created_at || row.createdAt,
-
-    updatedAt: row.updated_at || row.updatedAt,
-
-  };
-
+  return result;
 };
 
 const toRow = (entity, payload) => {
   const row = { ...payload };
+  Object.entries(FIELD_MAPS[entity] || {}).forEach(([camelKey, snakeKey]) => {
+    if (Object.prototype.hasOwnProperty.call(row, camelKey)) {
+      row[snakeKey] = row[camelKey];
+      delete row[camelKey];
+    }
+  });
 
-  if (entity === ENTITIES.PATIENTS) {
-
-    row.blood_group = row.bloodGroup;
-    delete row.bloodGroup;
-
-    row.emergency_contact = row.emergencyContact;
-    delete row.emergencyContact;
-
-    row.assigned_doctor = row.assignedDoctor;
-    delete row.assignedDoctor;
-
+  if (entity === ENTITIES.APPOINTMENTS) {
+    delete row.date;
+    delete row.time;
+    delete row.duration;
+    delete row.mode;
   }
 
-
-  if (entity === ENTITIES.DOCTORS) {
-
-    row.consultation_fee = row.consultationFee;
-
-    delete row.consultationFee;
-
+  if (entity === ENTITIES.INVOICES) {
+    // The database deliberately has no items column. Persist the existing
+    // line-item UI safely inside its notes field without changing the schema.
+    if (Array.isArray(payload.items)) {
+      row.notes = `${INVOICE_NOTES_PREFIX}${JSON.stringify({
+        items: payload.items,
+        notes: payload.notes || '',
+      })}`;
+    }
+    delete row.items;
+    delete row.issuedAt;
+    delete row.dueAt;
   }
 
-if (entity === ENTITIES.APPOINTMENTS) {
+  if (entity === ENTITIES.INVENTORY) {
+    // SKU and unit are presentation-only fields from the old local model.
+    delete row.sku;
+    delete row.unit;
+  }
 
-  row.patient_id = row.patientId;
-  row.doctor_id = row.doctorId;
-
-  row.appointment_date = row.appointmentDate || row.date;
-  row.appointment_time = row.appointmentTime || row.time;
-
-
-  delete row.patientId;
-  delete row.doctorId;
-
-  delete row.appointmentDate;
-  delete row.appointmentTime;
-
-  delete row.date;
-  delete row.time;
-
-
-  // remove fields not present in Supabase table
-  delete row.duration;
-  delete row.mode;
-
-}
-
-if (entity === ENTITIES.PRESCRIPTIONS) {
-  return {
-   
-
-    patient_id: payload.patientId || null,
-    doctor_id: payload.doctorId || null,
-    appointment_id: payload.appointmentId || null,
-
-    medicine: 
-      payload.items?.[0]?.medication ||
-      payload.medicine ||
-      '',
-
-    dosage:
-      payload.items?.[0]?.dosage ||
-      payload.dosage ||
-      null,
-
-    frequency:
-      payload.items?.[0]?.frequency ||
-      payload.frequency ||
-      null,
-
-    duration:
-      payload.items?.[0]?.duration ||
-      payload.duration ||
-      null,
-
-    instructions:
-      payload.items?.[0]?.instructions ||
-      payload.instructions ||
-      null,
-
-    notes: payload.notes || null,
-
-    diagnosis: payload.diagnosis || null,
-
-    items: payload.items || [],
-
-    status: payload.status || 'active',
-
-    issued_at:
-      payload.issuedAt ||
-      new Date().toISOString(),
-  };
-}
-
-
-
+  if (entity === ENTITIES.PRESCRIPTIONS && Array.isArray(payload.items)) {
+    const firstItem = payload.items[0] || {};
+    if (!Object.prototype.hasOwnProperty.call(row, 'medicine')) row.medicine = firstItem.medication || '';
+    if (!Object.prototype.hasOwnProperty.call(row, 'dosage')) row.dosage = firstItem.dosage || null;
+    if (!Object.prototype.hasOwnProperty.call(row, 'frequency')) row.frequency = firstItem.frequency || null;
+    if (!Object.prototype.hasOwnProperty.call(row, 'duration')) row.duration = firstItem.duration || null;
+    if (!Object.prototype.hasOwnProperty.call(row, 'instructions')) row.instructions = firstItem.instructions || null;
+  }
 
   if (entity === ENTITIES.MEDICAL_HISTORY) {
-
-    row.patient_id = row.patientId;
-    row.doctor_id = row.doctorId;
-
-    delete row.patientId;
-    delete row.doctorId;
-
+    // The deployed medical_history table stores its text summary as description.
+    if (Object.prototype.hasOwnProperty.call(row, 'summary')) {
+      row.description = row.summary;
+      delete row.summary;
+    }
+    if (Object.prototype.hasOwnProperty.call(row, 'recordedAt')) {
+      row.date = row.recordedAt;
+      delete row.recordedAt;
+    }
+    delete row.recordedBy;
+    delete row.details;
   }
-
 
   delete row.id;
   delete row.createdAt;
   delete row.updatedAt;
-
-  
+  // Empty values are not valid UUID foreign keys in Postgres.
+  ['patient_id', 'doctor_id', 'appointment_id'].forEach((key) => {
+    if (row[key] === '') row[key] = null;
+  });
   return row;
 };
 
@@ -603,7 +486,7 @@ export const dataService = {
       case ENTITIES.INVENTORY:
         if (!['ADMIN', 'PHARMACIST'].includes(user.role)) return [];
         break;
-      case ENTITIES.STAFF:
+      case ENTITIES.PROFILES:
         if (user.role !== 'ADMIN') return [];
         break;
     }
@@ -633,7 +516,7 @@ export const dataService = {
           return null;
         }
         break;
-      case ENTITIES.STAFF:
+      case ENTITIES.PROFILES:
         if (user.role !== 'ADMIN') {
           return null;
         }
