@@ -157,19 +157,6 @@ const Sidebar = ({ collapsed = false, isMobile = false, onClose, onToggleCollaps
         </ul>
       </nav>
 
-      {!collapsed && !isMobile && (
-        <div className="sidebar__footer">
-          <div className="sidebar__footer-cta">
-            <ClipboardList size={18} aria-hidden="true" />
-            <div>
-              <p className="sidebar__footer-title">All operational</p>
-              <p className="sidebar__footer-body">
-                Every module from Sprint 1-13 is wired and ready to use.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </aside>
   );
 };

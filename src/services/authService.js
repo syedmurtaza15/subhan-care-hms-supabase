@@ -182,13 +182,46 @@ export const signUpUser = async ({ email, password, name, role }) => {
     error.code = 'BACKEND_REQUIRED';
     throw error;
   }
+  
+  // Log the request details for debugging
+  if (import.meta.env.DEV) {
+    console.log('[authService] signUpUser called with:', { email, name, role });
+  }
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { name, role } },
   });
-  if (error) throw error;
+  
+  if (error) {
+    // Log the full error for debugging
+    if (import.meta.env.DEV) {
+      console.error('[authService] signUp error:', error);
+    }
+    // Create a more descriptive error message
+    const wrapped = new Error(error.message || 'Sign-up failed. Please check your email and password and try again.');
+    wrapped.code = error.code || error.status || 'SIGNUP_FAILED';
+    wrapped.details = error.details || '';
+    throw wrapped;
+  }
+
   // The handle_new_user trigger creates the profile row.
+  // If email confirmation is disabled, a session is returned immediately.
+  if (data?.session) {
+    // Fetch the profile that the trigger just created.
+    // Wait briefly to ensure the trigger has completed.
+    await sleep(500);
+    const profile = await fetchProfile(data.user.id);
+    const user = profileFromAuthUser(data.user, profile);
+    return {
+      user,
+      token: data.session.access_token,
+      session: data.session,
+      redirectTo: ROLE_LANDING[user.role] || '/dashboard',
+    };
+  }
+
   return data;
 };
 

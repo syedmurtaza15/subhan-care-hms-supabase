@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { Button, Input, Select, Alert } from '../../components/ui';
 import { ROLES, ROLE_LABEL } from '../../constants/roles';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES, ROLE_LANDING } from '../../constants/routes';
 import { INPUT_TYPES } from '../../constants/ui';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { signUpUser } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import { validateEmail, validateRequired, validatePassword, validateConfirmPassword } from '../../utils/validators';
 import './LoginPage.css';
 
@@ -14,6 +15,7 @@ const ROLE_OPTIONS = Object.values(ROLES).map((role) => ({ value: role, label: R
 
 const SignUpPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [values, setValues] = useState({
     name: '',
@@ -66,16 +68,20 @@ const SignUpPage = () => {
         role: values.role,
       });
 
-      if (result?.session) {
-        // Email confirmation is disabled on this project - the user is
-        // already signed in, so send them straight to login to establish
-        // a normal session there (keeps the login flow as the single
-        // source of truth for redirect-by-role).
+      if (result?.user && result?.token) {
+        // Email confirmation is disabled - auto-login the user
+        login(result.user, result.token, true);
+        setSuccess('Account created! Welcome to Subhan Care.');
+        setTimeout(() => navigate(result.redirectTo || ROUTES.DASHBOARD, { replace: true }), 1000);
+      } else if (result?.session) {
+        // Session exists but no user object (fallback)
         setSuccess('Account created! You can sign in now.');
+        setTimeout(() => navigate(ROUTES.LOGIN, { replace: true }), 1800);
       } else {
+        // Email confirmation is required
         setSuccess('Account created! Check your email to confirm your address, then sign in.');
+        setTimeout(() => navigate(ROUTES.LOGIN, { replace: true }), 1800);
       }
-      setTimeout(() => navigate(ROUTES.LOGIN, { replace: true }), 1800);
     } catch (error) {
       setServerError(error?.message || 'Could not create your account. Please try again.');
     } finally {

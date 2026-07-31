@@ -15,7 +15,6 @@ const AuthLayout = ({ children, subtitle }) => {
           <Link to="/" aria-label="Subhan Care home">
             <Logo size="md" variant="full" />
           </Link>
-          <span className="auth-layout__chip">v2.0</span>
         </div>
         <main className="auth-layout__panel" role="main">
           <div className="auth-layout__panel-inner">{children}</div>

@@ -193,13 +193,7 @@ const fromRow = (entity, row) => {
   delete result.created_at;
   delete result.updated_at;
 
-  if (entity === ENTITIES.DOCTORS) {
-    result.consultationFee = Number(result.consultationFee || 0);
-    result.availability = Array.isArray(result.availability)
-      ? result.availability
-      : result.availability ? result.availability.split(',') : [];
-  }
-
+ if (entity === ENTITIES.DOCTORS) { result.consultationFee = Number(result.consultationFee || 0); result.availability = Array.isArray(result.availability) ? result.availability : result.availability ? result.availability.split(',') : []; }
   if (entity === ENTITIES.APPOINTMENTS) {
     result.appointmentDate = row.appointment_date || '';
     result.appointmentTime = row.appointment_time || '';

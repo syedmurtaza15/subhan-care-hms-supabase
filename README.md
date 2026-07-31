@@ -1,101 +1,144 @@
 # Subhan Care — Hospital Management System
 
-A modular, role-aware Hospital Management System frontend for the Subhan Care Hospital Network. Built to fulfill the SRS document — covering all 13 sprints from Authentication through Reports, Settings & Error Pages.
+A comprehensive, role-based Hospital Management System (HMS) built with React and Supabase. Manage patients, doctors, appointments, prescriptions, inventory, and billing — all within a secure, role-aware dashboard.
 
-## Stack
+## Features
 
-- **React 18** with **Vite 5** as the bundler.
-- **React Router 6** for the auth + dashboard routing.
-- **lucide-react** for every icon (per the UI Design Guide).
-- **Poppins** loaded through Google Fonts.
-- Pure CSS modules (no CSS-in-JS), a `variables.css` token sheet, and component-scoped CSS files.
-- **Supabase** as the optional backend (Postgres + Auth + RLS), with a `localStorage` fallback for offline demo.
+- **Role-Based Access Control** — Five roles with distinct permissions: Admin, Doctor, Receptionist, Pharmacist, Billing Staff
+- **Patient Management** — Register, update, and manage patient records with medical history tracking
+- **Appointment Scheduling** — Calendar-based appointment management with status tracking
+- **Prescription Management** — Digital prescriptions with medication details and dosage instructions
+- **Inventory Management** — Track medication stock, reorder levels, and expiry dates
+- **Billing & Invoicing** — Generate invoices, track payments, and manage outstanding balances
+- **Reporting** — Dashboard analytics and visual reports for data-driven decisions
+- **Staff Management** — Admin-only staff directory and role management
+- **Secure Authentication** — Supabase Auth with email/password login and session management
+- **Row Level Security** — Database-level security policies that enforce role permissions
 
-## Folder structure
+## Tech Stack
 
-```
-src/
-├── assets/        # images, icons, fonts
-├── components/    # reusable components (ui, auth, layout)
-│   ├── ui/        # Button, Input, Card, Logo, Spinner, Alert, charts
-│   ├── auth/      # RoleSelector, OtpInput, AuthHero
-│   └── layout/    # Navbar, Sidebar
-├── lib/           # supabase.js client wrapper
-├── pages/         # all pages (auth/ + dashboard/)
-├── layouts/       # AuthLayout, DashboardLayout
-├── hooks/         # useAuthForm, useMediaQuery
-├── context/       # AuthContext, DataContext
-├── routes/        # AppRoutes, ProtectedRoute, PublicOnlyRoute
-├── services/      # authService, dataService
-├── constants/     # roles, routes, ui
-├── utils/         # helpers, storage, formatters
-└── styles/        # variables.css, global.css
-supabase/          # schema.sql, rls.sql, seed.sql
-scripts/           # check-secrets.sh
-```
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18, Vite 8, React Router 7 |
+| **UI** | Custom CSS modules, Lucide React icons, Poppins font |
+| **Backend** | Supabase (PostgreSQL, Auth, RLS, Realtime) |
+| **Auth** | Supabase Auth with email/password |
+| **Database** | PostgreSQL with Row Level Security |
+| **Deployment** | Vercel (SPA) |
 
-## Demo credentials
+## Role Permissions
 
-**Local demo mode (no Supabase):** the login page accepts any email + password ≥ 6 characters. The role is inferred from the email prefix. Try `admin@anything.com` / `password`.
+| Module | Admin | Doctor | Receptionist | Pharmacist | Billing Staff |
+|--------|-------|--------|-------------|------------|---------------|
+| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Patients | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Doctors | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Appointments | ✅ | ✅ | ✅ | ❌ | View Only |
+| Prescriptions | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Inventory | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Billing | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Reports | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Staff | ✅ | ❌ | ❌ | ❌ | ❌ |
 
-**Supabase mode (after running `supabase/seed.sql`):**
+## Getting Started
 
-| Role           | Email                        | Password      |
-|----------------|------------------------------|---------------|
-| Admin          | admin@subancare.com          | Subhan@2026   |
-| Doctor         | doctor@subancare.com         | Subhan@2026   |
-| Receptionist   | reception@subancare.com      | Subhan@2026   |
-| Pharmacist     | pharmacy@subancare.com       | Subhan@2026   |
-| Billing Staff  | billing@subancare.com        | Subhan@2026   |
+### Prerequisites
 
-> ⚠️ Change `Subhan@2026` in `supabase/seed.sql` before any non-demo deployment. The password is a placeholder; rotate it as part of the launch checklist.
+- Node.js 18+ 
+- npm or yarn
+- A Supabase project (free tier works)
 
-## Getting started
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/syedmurtaza15/subhan-care-hms-supabase.git
+cd subhan-care-hms-supabase/subhan-care-hms
+
+# Install dependencies
 npm install
-cp .env.example .env       # fill in if using Supabase
-npm run dev                # http://localhost:5173
-npm run build              # production bundle (runs secret scan first)
-npm run preview            # serve the production build
-npm run scan:secrets       # verify no hardcoded credentials
+
+# Set up environment variables
+cp .env.example .env
+# Fill in your Supabase URL and anon key in .env
+
+# Start development server
+npm run dev
 ```
 
-### Backend
+### Supabase Setup
 
-The app supports two backends out of the box:
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run the SQL migrations in order:
+   - `supabase/trigger_profile.sql` — Creates the auto-profile trigger for new users
+   - `supabase/rls_policies.sql` — Enables Row Level Security with role-based policies
+3. Get your API keys from Project Settings → API
+4. Add them to your `.env` file
 
-- **Local demo** — `localStorage`, no setup needed. Data is per-browser.
-- **Supabase** — real Postgres + Auth + RLS. See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for the 5-minute walkthrough.
+### Environment Variables
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+## Deployment
+
+### Deploy to Vercel
+
+1. Push the repository to GitHub
+2. Import the project in [Vercel](https://vercel.com)
+3. Set the following environment variables in Vercel:
+   - `VITE_SUPABASE_URL` — Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` — Your Supabase anon public key
+4. Deploy! Vercel will auto-detect the Vite configuration.
+
+The `vercel.json` file is already configured with SPA rewrites for React Router support.
+
+## Project Structure
+
+```
+subhan-care-hms/
+├── src/
+│   ├── assets/          # Images, icons, fonts
+│   ├── components/      # Reusable components
+│   │   ├── ui/          # Button, Input, Card, Logo, etc.
+│   │   ├── auth/        # AuthHero, OtpInput
+│   │   └── layout/      # Navbar, Sidebar
+│   ├── context/         # AuthContext, DataContext, ToastContext
+│   ├── hooks/           # useAuthForm, useMediaQuery
+│   ├── layouts/         # AuthLayout, DashboardLayout
+│   ├── lib/             # Supabase client configuration
+│   ├── pages/           # All page components
+│   │   ├── auth/        # Login, SignUp, ForgotPassword, etc.
+│   │   └── dashboard/   # All dashboard modules
+│   ├── routes/          # AppRoutes, ProtectedRoute
+│   ├── services/        # authService, dataService
+│   ├── constants/       # roles, routes, ui constants
+│   ├── utils/           # helpers, storage, validators
+│   └── styles/          # Global CSS and variables
+├── supabase/            # SQL migration files
+├── scripts/             # Utility scripts
+└── public/              # Static assets
+```
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server on port 5173 |
+| `npm run build` | Build for production (runs secret scan) |
+| `npm run preview` | Preview production build locally |
+| `npm run scan:secrets` | Check for hardcoded credentials |
 
 ## Security
 
-A full secret-safety pass has been completed. See [SECURITY.md](./SECURITY.md) for the audit findings, the data-flow guarantees, and the rotation checklist.
+- **Row Level Security** — All database operations are protected by RLS policies that enforce role-based permissions at the database level
+- **Environment Variables** — All sensitive credentials are stored in environment variables, never in source code
+- **Secret Scanning** — The build process automatically scans for hardcoded secrets
+- **Password Validation** — Strong password requirements enforced on sign-up
+- **Rate Limiting** — Login and password reset attempts are rate-limited
 
-Highlights:
+## License
 
-- All credentials live in environment variables, never in source code.
-- Demo credentials on the login page are masked (`••••••`) — they cannot be read by anyone viewing the rendered UI.
-- The `npm run build` command runs the secret scan first (`prebuild` hook).
-- The Supabase service-role key is documented in `.env.example` as a server-side-only value (no `VITE_` prefix).
-
-> ⚠️ **Git history warning:** if any credentials were ever hardcoded in earlier versions of this repo, those old values are still in git history. Treat any previously hardcoded secret as compromised and rotate it before the next deployment.
-
-## Responsive design
-
-- **1024 px and above** — full sidebar + content layout.
-- **768–1023 px** — sidebar collapses behind a hamburger in the navbar.
-- **480–600 px** — sidebar turns into a slide-in drawer; OTP cells resize.
-- **≤480 px** — single-column forms, simplified typography, full-width hero CTAs.
-
-## Submission checklist
-
-- [x] GitHub-ready folder layout, no inline styles.
-- [x] Functional components + hooks only.
-- [x] Reusable components (`Button`, `Input`, `Card`, `Logo`, `Spinner`, `Alert`, charts).
-- [x] Responsive at every breakpoint (no horizontal scroll at 360 px).
-- [x] Naming conventions: PascalCase components, camelCase utilities, UPPER_CASE constants.
-- [x] No console errors on any flow.
-- [x] Auth flow end-to-end: Login → Dashboard, Forgot → OTP → Reset → Login.
-- [x] Supabase backend with RLS policies per role (5 roles × 9 tables).
-- [x] Secret scan runs on every `npm run build`.
+© 2026 Subhan Care Hospital Network. All rights reserved.

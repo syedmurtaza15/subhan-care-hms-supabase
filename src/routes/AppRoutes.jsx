@@ -134,11 +134,39 @@ const AppRoutes = () => {
         <Route path="doctors/new" element={<DoctorsListPage />} />
         <Route path="doctors/:id" element={<DoctorDetailPage />} />
 
-        {/* Appointments - All authenticated users */}
-        <Route path="appointments" element={<AppointmentsPage />} />
-        <Route path="appointments/calendar" element={<AppointmentsPage />} />
-        <Route path="appointments/new" element={<AppointmentsPage />} />
-        <Route path="appointments/:id" element={<AppointmentDetailPage />} />
+        {/* Appointments - Admin, Receptionist, Doctor, Billing Staff (view only) */}
+        <Route 
+          path="appointments" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
+              <AppointmentsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="appointments/calendar" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
+              <AppointmentsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="appointments/new" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR']}>
+              <AppointmentsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="appointments/:id" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
+              <AppointmentDetailPage />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Billing - Admin, Billing Staff only */}
         <Route 
