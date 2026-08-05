@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Activity,
   Calendar,
@@ -11,12 +12,15 @@ import {
   Bed,
   Heart,
   Receipt,
+  CalendarCheck,
+  Clock,
 } from 'lucide-react';
 import { Card } from '../../components/ui';
 import { useAuth } from '../../context/AuthContext';
-import { useAppointments, useInvoices, usePatients } from '../../context/DataContext';
-import { ROLE_LABEL } from '../../constants/roles';
-import { formatDate } from '../../utils/helpers';
+import { useAppointments, useInvoices, usePatients, useDoctors } from '../../context/DataContext';
+import { ROLE_LABEL, ROLES } from '../../constants/roles';
+import { ROUTES } from '../../constants/routes';
+import { formatDate, formatTime } from '../../utils/helpers';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -24,53 +28,106 @@ const DashboardPage = () => {
   const patients = usePatients();
   const appointments = useAppointments();
   const invoices = useInvoices();
+  const { list: listDoctors } = useDoctors();
 
   const firstName = (user?.name || 'there').split(' ')[0];
+  const isPatient = user?.role === ROLES.PATIENT;
+  const doctors = listDoctors();
 
   const stats = useMemo(() => {
     const apptList = appointments.list();
     const invoiceList = invoices.list();
     const today = new Date().toISOString().split('T')[0];
+
+    // For patients, find their own appointments by matching email to patient record
+    if (isPatient) {
+      const userEmail = user?.email?.toLowerCase();
+      const myPatient = patients.list().find((p) => p.email?.toLowerCase() === userEmail);
+      const myAppts = myPatient
+        ? apptList.filter((a) => a.patientId === myPatient.id)
+        : [];
+
+      return {
+        activePatients: 0,
+        todaysAppointments: myAppts.filter((a) => (a.appointmentDate || a.date) === today && a.status !== 'cancelled').length,
+        pendingPrescriptions: myAppts.filter((a) => a.status === 'waiting').length,
+        outstanding: 0,
+        myAppointments: myAppts,
+        myPatient,
+      };
+    }
+
     return {
       activePatients: patients.list().filter((p) => p.status === 'active').length,
-      todaysAppointments: apptList.filter((a) => a.date === today && a.status !== 'cancelled').length,
+      todaysAppointments: apptList.filter((a) => (a.appointmentDate || a.date) === today && a.status !== 'cancelled').length,
       pendingPrescriptions: apptList.filter((a) => a.status === 'waiting').length,
       outstanding: invoiceList
         .filter((inv) => inv.status === 'unpaid' || inv.status === 'overdue' || inv.status === 'partial')
         .reduce((acc, inv) => acc + (inv.total - (inv.amountPaid || 0)), 0),
     };
-  }, [patients, appointments, invoices]);
+  }, [patients, appointments, invoices, isPatient, user?.email]);
 
-  const STATS = [
-    {
-      label: 'Active patients',
-      value: stats.activePatients,
-      delta: '+ live records',
-      icon: Users,
-      tone: 'primary',
-    },
-    {
-      label: "Today's appointments",
-      value: stats.todaysAppointments,
-      delta: 'on today\'s calendar',
-      icon: Calendar,
-      tone: 'secondary',
-    },
-    {
-      label: 'Outstanding invoices',
-      value: `Rs ${stats.outstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-      delta: 'awaiting payment',
-      icon: Receipt,
-      tone: 'warning',
-    },
-    {
-      label: 'Total appointments',
-      value: appointments.list().length,
-      delta: 'across all doctors',
-      icon: Activity,
-      tone: 'danger',
-    },
-  ];
+  const STATS = isPatient
+    ? [
+        {
+          label: 'My appointments',
+          value: stats.myAppointments?.length || 0,
+          delta: 'total scheduled',
+          icon: CalendarCheck,
+          tone: 'primary',
+        },
+        {
+          label: "Today's appointments",
+          value: stats.todaysAppointments,
+          delta: 'on today\'s calendar',
+          icon: Calendar,
+          tone: 'secondary',
+        },
+        {
+          label: 'Waiting',
+          value: stats.pendingPrescriptions,
+          delta: 'in waiting room',
+          icon: Clock,
+          tone: 'warning',
+        },
+        {
+          label: 'My doctor',
+          value: stats.myPatient ? 'Assigned' : '—',
+          delta: stats.myPatient ? 'on file' : 'not assigned',
+          icon: Stethoscope,
+          tone: 'danger',
+        },
+      ]
+    : [
+        {
+          label: 'Active patients',
+          value: stats.activePatients,
+          delta: '+ live records',
+          icon: Users,
+          tone: 'primary',
+        },
+        {
+          label: "Today's appointments",
+          value: stats.todaysAppointments,
+          delta: 'on today\'s calendar',
+          icon: Calendar,
+          tone: 'secondary',
+        },
+        {
+          label: 'Outstanding invoices',
+          value: `Rs ${stats.outstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+          delta: 'awaiting payment',
+          icon: Receipt,
+          tone: 'warning',
+        },
+        {
+          label: 'Total appointments',
+          value: appointments.list().length,
+          delta: 'across all doctors',
+          icon: Activity,
+          tone: 'danger',
+        },
+      ];
 
   return (
     <div className="dashboard-page">
@@ -108,6 +165,43 @@ const DashboardPage = () => {
           </Card>
         ))}
       </section>
+
+      {isPatient && (
+        <Card title="My upcoming appointments" subtitle="Your scheduled consultations.">
+          {stats.myAppointments?.filter((a) => a.status !== 'cancelled' && a.status !== 'completed').length > 0 ? (
+            <ul className="dashboard-page__activity">
+              {stats.myAppointments
+                .filter((a) => a.status !== 'cancelled' && a.status !== 'completed')
+                .slice(0, 3)
+                .map((appt) => {
+                  const doctor = doctors.find((d) => d.id === appt.doctorId);
+                  return (
+                    <li key={appt.id} className="dashboard-page__activity-item">
+                      <span className="dashboard-page__activity-icon" aria-hidden="true">
+                        <CalendarCheck size={18} />
+                      </span>
+                      <div>
+                        <p className="dashboard-page__activity-title">
+                          {formatDate(appt.appointmentDate || appt.date, { weekday: 'long', month: 'long', day: 'numeric' })} ·{' '}
+                          {formatTime(`1970-01-01T${appt.appointmentTime || appt.time}:00`)}
+                        </p>
+                        <p className="dashboard-page__activity-body">
+                          with <strong>{doctor?.name || 'Doctor'}</strong> · {appt.reason}
+                        </p>
+                        <span className="dashboard-page__activity-time">{appt.status}</span>
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+          ) : (
+            <p className="dashboard-page__empty">You have no upcoming appointments.</p>
+          )}
+          <Link to={ROUTES.MY_APPOINTMENTS} className="dashboard-page__view-all">
+            View all my appointments →
+          </Link>
+        </Card>
+      )}
 
       <section className="dashboard-page__grid">
         <Card title="Recent activity" subtitle="What happened across Subhan Care in the last few hours.">

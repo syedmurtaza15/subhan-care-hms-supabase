@@ -52,7 +52,7 @@ const DoctorDetailPage = () => {
     () =>
       appointments
         .filter((a) => a.status === 'confirmed' || a.status === 'waiting' || a.status === 'followup')
-        .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)),
+        .sort((a, b) => ((a.appointmentDate||a.date) + (a.appointmentTime||a.time)).localeCompare((b.appointmentDate||b.date) + (b.appointmentTime||b.time))),
     [appointments],
   );
 
@@ -196,8 +196,8 @@ const DoctorDetailPage = () => {
             {upcoming.map((appt) => (
               <li key={appt.id}>
                 <div className="doctor-detail__appt-when">
-                  <strong>{formatDate(appt.date)}</strong>
-                  <span>{formatTime(`1970-01-01T${appt.time}:00`)} · {appt.duration} min</span>
+                  <strong>{formatDate(appt.appointmentDate || appt.date)}</strong>
+                  <span>{formatTime(`1970-01-01T${appt.appointmentTime || appt.time}:00`)} · {appt.duration} min</span>
                 </div>
                 <div className="doctor-detail__appt-patient">
                   <User size={14} aria-hidden="true" />

@@ -52,6 +52,8 @@ const departmentForRole = (role) => {
       return 'Finance';
     case ROLES.RECEPTIONIST:
       return 'Front Desk';
+    case ROLES.PATIENT:
+      return 'Patient';
     default:
       return 'Operations';
   }
@@ -64,6 +66,7 @@ const inferRoleFromEmail = (email) => {
   if (local.includes('billing') || local.includes('cashier')) return ROLES.BILLING_STAFF;
   if (local.includes('recep') || local.includes('front')) return ROLES.RECEPTIONIST;
   if (local.includes('admin')) return ROLES.ADMIN;
+  if (local.includes('patient') || local.includes('pt')) return ROLES.PATIENT;
   return ROLES.DOCTOR;
 };
 

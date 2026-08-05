@@ -2,6 +2,9 @@
 -- RLS Policies for Subhan Care HMS
 -- Enables Row Level Security on all tables and creates
 -- role-based access policies.
+--
+-- IDEMPOTENT: Drops existing policies before re-creating them,
+-- so re-running this file is always safe.
 -- ============================================================
 
 -- Helper function to get the current user's role from profiles
@@ -21,19 +24,28 @@ $$;
 -- ============================================================
 ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Patients are viewable by all authenticated users" ON public.patients;
+DROP POLICY IF EXISTS "Patients can be created by Admin, Receptionist, Doctor, Billing Staff" ON public.patients;
+DROP POLICY IF EXISTS "Patients can be created by Admin, Receptionist only" ON public.patients;
+DROP POLICY IF EXISTS "Patients can be updated by Admin, Receptionist, Doctor, Billing Staff" ON public.patients;
+DROP POLICY IF EXISTS "Patients can be updated by Admin, Receptionist only" ON public.patients;
+DROP POLICY IF EXISTS "Patients can be deleted by Admin only" ON public.patients;
+
 CREATE POLICY "Patients are viewable by all authenticated users"
   ON public.patients FOR SELECT
   USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Patients can be created by Admin, Receptionist, Doctor, Billing Staff"
+-- Only Admin and Receptionist can create patients (per interviewer feedback)
+CREATE POLICY "Patients can be created by Admin, Receptionist only"
   ON public.patients FOR INSERT
   WITH CHECK (
-    public.current_user_role() IN ('ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF')
+    public.current_user_role() IN ('ADMIN', 'RECEPTIONIST')
   );
 
-CREATE POLICY "Patients can be updated by Admin, Receptionist, Doctor, Billing Staff"
+-- Only Admin and Receptionist can update patients
+CREATE POLICY "Patients can be updated by Admin, Receptionist only"
   ON public.patients FOR UPDATE
-  USING (public.current_user_role() IN ('ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF'));
+  USING (public.current_user_role() IN ('ADMIN', 'RECEPTIONIST'));
 
 CREATE POLICY "Patients can be deleted by Admin only"
   ON public.patients FOR DELETE
@@ -43,6 +55,11 @@ CREATE POLICY "Patients can be deleted by Admin only"
 -- DOCTORS
 -- ============================================================
 ALTER TABLE public.doctors ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Doctors are viewable by all authenticated users" ON public.doctors;
+DROP POLICY IF EXISTS "Doctors can be created by Admin only" ON public.doctors;
+DROP POLICY IF EXISTS "Doctors can be updated by Admin only" ON public.doctors;
+DROP POLICY IF EXISTS "Doctors can be deleted by Admin only" ON public.doctors;
 
 CREATE POLICY "Doctors are viewable by all authenticated users"
   ON public.doctors FOR SELECT
@@ -65,14 +82,23 @@ CREATE POLICY "Doctors can be deleted by Admin only"
 -- ============================================================
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Appointments are viewable by all authenticated users" ON public.appointments;
+DROP POLICY IF EXISTS "Appointments can be created by Admin, Receptionist, Doctor" ON public.appointments;
+DROP POLICY IF EXISTS "Appointments can be created by Admin, Receptionist only" ON public.appointments;
+DROP POLICY IF EXISTS "Appointments can be updated by Admin, Receptionist, Doctor" ON public.appointments;
+DROP POLICY IF EXISTS "Appointments can be deleted by Admin only" ON public.appointments;
+
+-- All authenticated users (including patients) can view appointments
 CREATE POLICY "Appointments are viewable by all authenticated users"
   ON public.appointments FOR SELECT
   USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Appointments can be created by Admin, Receptionist, Doctor"
+-- Only Admin and Receptionist can create appointments (per interviewer feedback)
+CREATE POLICY "Appointments can be created by Admin, Receptionist only"
   ON public.appointments FOR INSERT
-  WITH CHECK (public.current_user_role() IN ('ADMIN', 'RECEPTIONIST', 'DOCTOR'));
+  WITH CHECK (public.current_user_role() IN ('ADMIN', 'RECEPTIONIST'));
 
+-- Admin, Receptionist can update appointments. Doctor can only cancel (update status to cancelled).
 CREATE POLICY "Appointments can be updated by Admin, Receptionist, Doctor"
   ON public.appointments FOR UPDATE
   USING (public.current_user_role() IN ('ADMIN', 'RECEPTIONIST', 'DOCTOR'));
@@ -85,6 +111,11 @@ CREATE POLICY "Appointments can be deleted by Admin only"
 -- PRESCRIPTIONS
 -- ============================================================
 ALTER TABLE public.prescriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Prescriptions are viewable by all authenticated users" ON public.prescriptions;
+DROP POLICY IF EXISTS "Prescriptions can be created by Admin, Doctor" ON public.prescriptions;
+DROP POLICY IF EXISTS "Prescriptions can be updated by Admin, Doctor" ON public.prescriptions;
+DROP POLICY IF EXISTS "Prescriptions can be deleted by Admin only" ON public.prescriptions;
 
 CREATE POLICY "Prescriptions are viewable by all authenticated users"
   ON public.prescriptions FOR SELECT
@@ -107,6 +138,11 @@ CREATE POLICY "Prescriptions can be deleted by Admin only"
 -- ============================================================
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Invoices are viewable by Admin, Billing Staff" ON public.invoices;
+DROP POLICY IF EXISTS "Invoices can be created by Admin, Billing Staff" ON public.invoices;
+DROP POLICY IF EXISTS "Invoices can be updated by Admin, Billing Staff" ON public.invoices;
+DROP POLICY IF EXISTS "Invoices can be deleted by Admin only" ON public.invoices;
+
 CREATE POLICY "Invoices are viewable by Admin, Billing Staff"
   ON public.invoices FOR SELECT
   USING (public.current_user_role() IN ('ADMIN', 'BILLING_STAFF'));
@@ -127,6 +163,11 @@ CREATE POLICY "Invoices can be deleted by Admin only"
 -- INVENTORY
 -- ============================================================
 ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Inventory is viewable by Admin, Pharmacist" ON public.inventory;
+DROP POLICY IF EXISTS "Inventory can be created by Admin, Pharmacist" ON public.inventory;
+DROP POLICY IF EXISTS "Inventory can be updated by Admin, Pharmacist" ON public.inventory;
+DROP POLICY IF EXISTS "Inventory can be deleted by Admin only" ON public.inventory;
 
 CREATE POLICY "Inventory is viewable by Admin, Pharmacist"
   ON public.inventory FOR SELECT
@@ -149,6 +190,11 @@ CREATE POLICY "Inventory can be deleted by Admin only"
 -- ============================================================
 ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Staff is viewable by Admin only" ON public.staff;
+DROP POLICY IF EXISTS "Staff can be created by Admin only" ON public.staff;
+DROP POLICY IF EXISTS "Staff can be updated by Admin only" ON public.staff;
+DROP POLICY IF EXISTS "Staff can be deleted by Admin only" ON public.staff;
+
 CREATE POLICY "Staff is viewable by Admin only"
   ON public.staff FOR SELECT
   USING (public.current_user_role() = 'ADMIN');
@@ -169,6 +215,20 @@ CREATE POLICY "Staff can be deleted by Admin only"
 -- PROFILES
 -- ============================================================
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Allow the new PATIENT role in the profiles table.
+-- The original schema had a CHECK constraint that only allowed
+-- ADMIN, DOCTOR, RECEPTIONIST, PHARMACIST, BILLING_STAFF.
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_role_check;
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_role_check
+  CHECK (role IN ('ADMIN', 'DOCTOR', 'RECEPTIONIST', 'PHARMACIST', 'BILLING_STAFF', 'PATIENT'));
+
+DROP POLICY IF EXISTS "Users can view their own profile, Admin can view all" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles can be created by the trigger only" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update their own profile, Admin can update all" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles can be deleted by Admin only" ON public.profiles;
 
 CREATE POLICY "Users can view their own profile, Admin can view all"
   ON public.profiles FOR SELECT
@@ -195,6 +255,11 @@ CREATE POLICY "Profiles can be deleted by Admin only"
 -- ============================================================
 ALTER TABLE public.medical_history ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Medical history is viewable by all authenticated users" ON public.medical_history;
+DROP POLICY IF EXISTS "Medical history can be created by Admin, Doctor" ON public.medical_history;
+DROP POLICY IF EXISTS "Medical history can be updated by Admin, Doctor" ON public.medical_history;
+DROP POLICY IF EXISTS "Medical history can be deleted by Admin only" ON public.medical_history;
+
 CREATE POLICY "Medical history is viewable by all authenticated users"
   ON public.medical_history FOR SELECT
   USING (auth.role() = 'authenticated');
@@ -210,3 +275,41 @@ CREATE POLICY "Medical history can be updated by Admin, Doctor"
 CREATE POLICY "Medical history can be deleted by Admin only"
   ON public.medical_history FOR DELETE
   USING (public.current_user_role() = 'ADMIN');
+
+-- ============================================================
+-- DOUBLE-BOOKING PREVENTION
+-- A doctor cannot have two appointments at the same date/time.
+-- ============================================================
+
+-- Add a unique constraint on appointments to prevent double-booking at the database level.
+-- This is the strongest guarantee - even if the app layer is bypassed, the DB rejects conflicts.
+-- ============================================================
+-- DOUBLE-BOOKING PREVENTION
+-- A doctor cannot have two appointments at the same date/time.
+-- Uses a PARTIAL INDEX that excludes cancelled appointments.
+-- ============================================================
+
+-- Drop old constraint/index if they exist (idempotent)
+DROP INDEX IF EXISTS appointments_doctor_date_time_unique;
+ALTER TABLE public.appointments DROP CONSTRAINT IF EXISTS appointments_doctor_date_time_unique;
+
+-- Clean up duplicates among non-cancelled appointments
+UPDATE public.appointments
+SET status = 'cancelled'
+WHERE id IN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (
+      PARTITION BY doctor_id, appointment_date, appointment_time
+      ORDER BY created_at
+    ) as rn
+    FROM public.appointments
+    WHERE status IS DISTINCT FROM 'cancelled'
+  ) ranked
+  WHERE rn > 1
+);
+
+-- Create a PARTIAL unique index that only applies to non-cancelled appointments
+-- This is the correct approach: cancelled appointments don't block re-booking
+CREATE UNIQUE INDEX IF NOT EXISTS appointments_doctor_date_time_unique
+  ON public.appointments (doctor_id, appointment_date, appointment_time)
+  WHERE status IS DISTINCT FROM 'cancelled';

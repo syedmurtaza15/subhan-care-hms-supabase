@@ -78,6 +78,12 @@ const DEMO_USERS = [
     email: process.env.VITE_DEMO_BILLING_EMAIL,
     password: process.env.VITE_DEMO_BILLING_PASSWORD,
   },
+  {
+    role: 'PATIENT',
+    name: 'Aisha Mehmood',
+    email: process.env.VITE_DEMO_PATIENT_EMAIL,
+    password: process.env.VITE_DEMO_PATIENT_PASSWORD,
+  },
 ];
 
 const missingCreds = DEMO_USERS.filter((u) => !u.email || !u.password);
@@ -94,7 +100,8 @@ const run = async () => {
   console.log(`Seeding ${DEMO_USERS.length} demo users into ${SUPABASE_URL} ...\n`);
 
   for (const demoUser of DEMO_USERS) {
-    const { data: existing } = await supabaseAdmin.auth.admin.listUsers();
+    // Fetch ALL users (not just the first page) to check for existing accounts
+    const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const alreadyExists = existing?.users?.some((u) => u.email === demoUser.email);
 
     if (alreadyExists) {
@@ -102,7 +109,7 @@ const run = async () => {
       continue;
     }
 
-    const { error } = await supabaseAdmin.auth.admin.createUser({
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email: demoUser.email,
       password: demoUser.password,
       email_confirm: true, // demo accounts can sign in immediately, no email step
@@ -113,7 +120,12 @@ const run = async () => {
     });
 
     if (error) {
-      console.error(`  FAILED ${demoUser.role.padEnd(14)} ${demoUser.email} - ${error.message}`);
+      // If the user already exists (race condition or pagination miss), treat as success
+      if (error.message?.includes('already been registered') || error.message?.includes('already exists')) {
+        console.log(`  skip   ${demoUser.role.padEnd(14)} ${demoUser.email} (already exists)`);
+        continue;
+      }
+      console.error(`  FAILED ${demoUser.role.padEnd(14)} ${demoUser.email} - ${error.message || JSON.stringify(error)}`);
       continue;
     }
 

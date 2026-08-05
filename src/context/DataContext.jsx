@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { dataService, ENTITIES, refreshAll, subscribe } from '../services/dataService';
+import { dataService, ENTITIES, refreshAll, rehydrateCache, subscribe } from '../services/dataService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { seedIfEmpty } from '../services/seedData';
 
@@ -37,11 +37,28 @@ export const DataProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
   const [loadError, setLoadError] = useState(null);
 
+  const refreshAllFromCache = useCallback(() => {
+    setPatients(dataService.list(ENTITIES.PATIENTS));
+    setDoctors(dataService.list(ENTITIES.DOCTORS));
+    setAppointments(dataService.list(ENTITIES.APPOINTMENTS));
+    setInvoices(dataService.list(ENTITIES.INVOICES));
+    setStaff(dataService.list(ENTITIES.STAFF));
+    setProfiles(dataService.list(ENTITIES.PROFILES));
+    setPrescriptions(dataService.list(ENTITIES.PRESCRIPTIONS));
+    setInventory(dataService.list(ENTITIES.INVENTORY));
+    setMedicalHistory(dataService.list(ENTITIES.MEDICAL_HISTORY));
+  }, []);
+
   // Seed localStorage on first mount (demo mode only).
+  // rehydrateCache() pulls the seeded data into the in-memory cache so the
+  // UI picks it up immediately on first render.
   useEffect(() => {
     if (!isSupabaseConfigured) {
       seedIfEmpty();
+      rehydrateCache();
+      refreshAllFromCache();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Initial fetch (Supabase mode).
@@ -55,15 +72,7 @@ export const DataProvider = ({ children }) => {
     refreshAll()
       .then(() => {
         if (!cancelled) {
-          setPatients(dataService.list(ENTITIES.PATIENTS));
-          setDoctors(dataService.list(ENTITIES.DOCTORS));
-          setAppointments(dataService.list(ENTITIES.APPOINTMENTS));
-          setInvoices(dataService.list(ENTITIES.INVOICES));
-          setStaff(dataService.list(ENTITIES.STAFF));
-          setProfiles(dataService.list(ENTITIES.PROFILES));
-          setPrescriptions(dataService.list(ENTITIES.PRESCRIPTIONS));
-          setInventory(dataService.list(ENTITIES.INVENTORY));
-          setMedicalHistory(dataService.list(ENTITIES.MEDICAL_HISTORY));
+          refreshAllFromCache();
           setIsLoading(false);
         }
       })
@@ -76,18 +85,6 @@ export const DataProvider = ({ children }) => {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const refreshAllFromCache = useCallback(() => {
-    setPatients(dataService.list(ENTITIES.PATIENTS));
-    setDoctors(dataService.list(ENTITIES.DOCTORS));
-    setAppointments(dataService.list(ENTITIES.APPOINTMENTS));
-    setInvoices(dataService.list(ENTITIES.INVOICES));
-    setStaff(dataService.list(ENTITIES.STAFF));
-    setProfiles(dataService.list(ENTITIES.PROFILES));
-    setPrescriptions(dataService.list(ENTITIES.PRESCRIPTIONS));
-    setInventory(dataService.list(ENTITIES.INVENTORY));
-    setMedicalHistory(dataService.list(ENTITIES.MEDICAL_HISTORY));
   }, []);
 
   // Subscribe to dataService notifications (so every CRUD updates us).

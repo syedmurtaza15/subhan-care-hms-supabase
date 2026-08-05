@@ -154,6 +154,24 @@ if (!isSupabaseConfigured) {
   cache.medicalHistory = readLsCollection(ENTITIES.MEDICAL_HISTORY);
 }
 
+/**
+ * Re-read every collection from localStorage into the in-memory cache.
+ * Called after seedIfEmpty() so the UI picks up seeded data immediately.
+ */
+export const rehydrateCache = () => {
+  if (isSupabaseConfigured) return;
+  cache.patients = readLsCollection(ENTITIES.PATIENTS);
+  cache.doctors = readLsCollection(ENTITIES.DOCTORS);
+  cache.appointments = readLsCollection(ENTITIES.APPOINTMENTS);
+  cache.invoices = readLsCollection(ENTITIES.INVOICES);
+  cache.staff = readLsCollection(ENTITIES.STAFF);
+  cache.profiles = readLsCollection(ENTITIES.PROFILES);
+  cache.prescriptions = readLsCollection(ENTITIES.PRESCRIPTIONS);
+  cache.inventory = readLsCollection(ENTITIES.INVENTORY);
+  cache.medicalHistory = readLsCollection(ENTITIES.MEDICAL_HISTORY);
+  notify();
+};
+
 // The UI uses camelCase while PostgREST exposes the database's snake_case
 // columns. Keep this conversion in one place so pages never need to know the
 // database schema.
@@ -310,17 +328,60 @@ const toRow = (entity, payload) => {
 };
 
 const supabaseCreate = async (entity, payload) => {
+  // Double-booking prevention for appointments
+  if (entity === ENTITIES.APPOINTMENTS) {
+    const existing = cache[entity] || [];
+    const conflict = existing.find(
+      (a) =>
+        a.doctorId === payload.doctorId &&
+        (a.appointmentDate || a.date) === (payload.appointmentDate || payload.date) &&
+        (a.appointmentTime || a.time) === (payload.appointmentTime || payload.time) &&
+        a.status !== 'cancelled',
+    );
+    if (conflict) {
+      const error = new Error(
+        'This time slot is already booked for ' + conflict.id + '. Please choose another slot.',
+      );
+      error.code = 'SLOT_CONFLICT';
+      throw error;
+    }
+  }
   const row = toRow(entity, payload);
   const { data, error } = await supabase
     .from(entity)
     .insert([row])
     .select()
     .single();
-  throwIfError(error, `${entity}.create`);
+  throwIfError(error, entity + '.create');
   return fromRow(entity, data);
 };
 
 const supabaseUpdate = async (entity, id, patch) => {
+  // Double-booking prevention for appointments
+  if (entity === ENTITIES.APPOINTMENTS && (patch.doctorId || patch.appointmentDate || patch.appointmentTime)) {
+    const existing = cache[entity] || [];
+    const current = existing.find((item) => item.id === id);
+    if (current) {
+      const nextDoctorId = patch.doctorId || current.doctorId;
+      const nextDate = patch.appointmentDate || current.appointmentDate || current.date;
+      const nextTime = patch.appointmentTime || current.appointmentTime || current.time;
+      const conflict = existing.find(
+        (a) =>
+          a.id !== id &&
+          a.doctorId === nextDoctorId &&
+          (a.appointmentDate || a.date) === nextDate &&
+          (a.appointmentTime || a.time) === nextTime &&
+          a.status !== 'cancelled',
+      );
+      if (conflict) {
+        const error = new Error(
+          'This time slot is already booked for ' + conflict.id + '. Please choose another slot.',
+        );
+        error.code = 'SLOT_CONFLICT';
+        throw error;
+      }
+    }
+  }
   const row = toRow(entity, patch);
   const { data, error } = await supabase
     .from(entity)
@@ -328,7 +389,7 @@ const supabaseUpdate = async (entity, id, patch) => {
     .eq('id', id)
     .select()
     .single();
-  throwIfError(error, `${entity}.update`);
+  throwIfError(error, entity + '.update');
   return fromRow(entity, data);
 };
 
@@ -340,6 +401,25 @@ const supabaseRemove = async (entity, id) => {
 
 const lsCreate = async (entity, payload) => {
   await sleep(280);
+  
+  // Double-booking prevention: a doctor cannot have two appointments at the same date/time.
+  if (entity === ENTITIES.APPOINTMENTS) {
+    const existing = readLsCollection(entity);
+    const conflict = existing.find(
+      (a) =>
+        a.doctorId === payload.doctorId &&
+        (a.appointmentDate || a.date) === payload.appointmentDate &&
+        (a.appointmentTime || a.time) === payload.appointmentTime &&
+        a.status !== 'cancelled',
+    );
+    if (conflict) {
+      const error = new Error(
+        `This time slot is already booked for ${conflict.id}. Please choose another slot.`,
+      );
+      error.code = 'SLOT_CONFLICT';
+      throw error;
+    }
+  }
   
   // Validate invoice totals to prevent manipulation
   if (entity === ENTITIES.INVOICES && payload.items) {
@@ -369,6 +449,13 @@ const lsCreate = async (entity, payload) => {
     updatedAt: seedNow(),
     ...payload,
   };
+  // Add display aliases for appointments so the UI can read date/time
+  // from either the canonical (appointmentDate/appointmentTime) or
+  // legacy (date/time) field names.
+  if (entity === ENTITIES.APPOINTMENTS) {
+    record.date = record.appointmentDate || record.date || '';
+    record.time = record.appointmentTime || record.time || '';
+  }
   writeLsCollection(entity, [record, ...collection]);
   cache[entity] = [record, ...collection];
   notify();
@@ -377,6 +464,32 @@ const lsCreate = async (entity, payload) => {
 
 const lsUpdate = async (entity, id, patch) => {
   await sleep(220);
+  
+  // Double-booking prevention on update: check for conflicts when date/time/doctor changes.
+  if (entity === ENTITIES.APPOINTMENTS && (patch.doctorId || patch.appointmentDate || patch.appointmentTime)) {
+    const collection = readLsCollection(entity);
+    const existing = collection.find((item) => item.id === id);
+    if (existing) {
+      const nextDoctorId = patch.doctorId || existing.doctorId;
+      const nextDate = patch.appointmentDate || existing.appointmentDate || existing.date;
+      const nextTime = patch.appointmentTime || existing.appointmentTime || existing.time;
+      const conflict = collection.find(
+        (a) =>
+          a.id !== id &&
+          a.doctorId === nextDoctorId &&
+          (a.appointmentDate || a.date) === nextDate &&
+          (a.appointmentTime || a.time) === nextTime &&
+          a.status !== 'cancelled',
+      );
+      if (conflict) {
+        const error = new Error(
+          `This time slot is already booked for ${conflict.id}. Please choose another slot.`,
+        );
+        error.code = 'SLOT_CONFLICT';
+        throw error;
+      }
+    }
+  }
   
   // Validate invoice totals on update
   if (entity === ENTITIES.INVOICES && patch.items) {
@@ -428,6 +541,10 @@ const lsUpdate = async (entity, id, patch) => {
   const next = collection.map((item) => {
     if (item.id !== id) return item;
     updated = { ...item, ...patch, updatedAt: seedNow() };
+    if (entity === ENTITIES.APPOINTMENTS) {
+      updated.date = updated.appointmentDate || updated.date || '';
+      updated.time = updated.appointmentTime || updated.time || '';
+    }
     return updated;
   });
   writeLsCollection(entity, next);
@@ -483,6 +600,18 @@ export const dataService = {
       case ENTITIES.PROFILES:
         if (user.role !== 'ADMIN') return [];
         break;
+      case ENTITIES.DOCTORS:
+        // Patients can view doctors list to see who their assigned doctor is
+        break;
+      case ENTITIES.PRESCRIPTIONS:
+        if (user.role === 'PATIENT') return [];
+        break;
+      case ENTITIES.MEDICAL_HISTORY:
+        if (user.role === 'PATIENT') return [];
+        break;
+      case ENTITIES.PATIENTS:
+        // Patients can view the patient list to find their own record
+        break;
     }
     
     return data;
@@ -496,9 +625,7 @@ export const dataService = {
     // Role-based access control for individual records
     switch (entity) {
       case ENTITIES.PATIENTS:
-        if (!['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF'].includes(user.role)) {
-          return null;
-        }
+        // Patients can view their own record (matched by email in the UI)
         break;
       case ENTITIES.INVOICES:
         if (!['ADMIN', 'BILLING_STAFF'].includes(user.role)) {
@@ -516,10 +643,14 @@ export const dataService = {
         }
         break;
       case ENTITIES.DOCTORS:
-      case ENTITIES.APPOINTMENTS:
+        // Patients can view individual doctor records to see appointment details
+        break;
       case ENTITIES.PRESCRIPTIONS:
       case ENTITIES.MEDICAL_HISTORY:
-        // All authenticated users can read these for basic operations
+        if (user.role === 'PATIENT') return null;
+        break;
+      case ENTITIES.APPOINTMENTS:
+        // All authenticated users including patients can read appointments
         break;
     }
     

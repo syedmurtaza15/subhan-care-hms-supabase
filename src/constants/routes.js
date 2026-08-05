@@ -14,6 +14,7 @@ export const ROUTES = Object.freeze({
   PATIENTS: '/dashboard/patients',
   DOCTORS: '/dashboard/doctors',
   APPOINTMENTS: '/dashboard/appointments',
+  MY_APPOINTMENTS: '/dashboard/my-appointments',
   PRESCRIPTIONS: '/dashboard/prescriptions',
   INVENTORY: '/dashboard/inventory',
   BILLING: '/dashboard/billing',
@@ -28,4 +29,5 @@ export const ROLE_LANDING = Object.freeze({
   RECEPTIONIST: ROUTES.APPOINTMENTS,
   PHARMACIST: ROUTES.INVENTORY,
   BILLING_STAFF: ROUTES.BILLING,
+  PATIENT: ROUTES.MY_APPOINTMENTS,
 });

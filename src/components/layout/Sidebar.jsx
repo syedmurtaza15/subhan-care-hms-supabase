@@ -16,6 +16,7 @@ import {
   BadgeHelp,
   ChevronLeft,
   TrendingUp,
+  CalendarCheck,
 } from 'lucide-react';
 import Logo from '../ui/Logo';
 import { ROUTES } from '../../constants/routes';
@@ -24,6 +25,8 @@ import { useAuth } from '../../context/AuthContext';
 import { classNames } from '../../utils/helpers';
 import './Sidebar.css';
 
+// Role-based menu configuration - each item shows only for roles that can access it.
+// If `roles` is omitted, the item is visible to all authenticated users.
 const MENU_GROUPS = [
   {
     title: 'Overview',
@@ -33,25 +36,32 @@ const MENU_GROUPS = [
         path: ROUTES.DASHBOARD,
         icon: LayoutDashboard,
         end: true,
+        roles: [ROLES.ADMIN, ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.PHARMACIST, ROLES.BILLING_STAFF],
       },
     ],
   },
   {
     title: 'Clinical',
     items: [
-      { label: 'Patients', path: ROUTES.PATIENTS, icon: Users },
-      { label: 'Doctors', path: ROUTES.DOCTORS, icon: Stethoscope, roles: [ROLES.ADMIN] },
-      { label: 'Appointments', path: ROUTES.APPOINTMENTS, icon: CalendarClock },
-      { label: 'Prescriptions', path: ROUTES.PRESCRIPTIONS, icon: Pill },
+      { label: 'Patients', path: ROUTES.PATIENTS, icon: Users, roles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.BILLING_STAFF] },
+      { label: 'Doctors', path: ROUTES.DOCTORS, icon: Stethoscope, roles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.BILLING_STAFF] },
+      { label: 'Appointments', path: ROUTES.APPOINTMENTS, icon: CalendarClock, roles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.BILLING_STAFF] },
+      { label: 'Prescriptions', path: ROUTES.PRESCRIPTIONS, icon: Pill, roles: [ROLES.ADMIN, ROLES.DOCTOR, ROLES.PHARMACIST] },
     ],
   },
   {
     title: 'Operations',
     items: [
-      { label: 'Inventory', path: ROUTES.INVENTORY, icon: Boxes },
-      { label: 'Billing', path: ROUTES.BILLING, icon: Receipt },
+      { label: 'Inventory', path: ROUTES.INVENTORY, icon: Boxes, roles: [ROLES.ADMIN, ROLES.PHARMACIST] },
+      { label: 'Billing', path: ROUTES.BILLING, icon: Receipt, roles: [ROLES.ADMIN, ROLES.BILLING_STAFF] },
       { label: 'Reports', path: ROUTES.REPORTS, icon: TrendingUp, roles: [ROLES.ADMIN] },
       { label: 'Staff', path: `${ROUTES.DASHBOARD}/staff`, icon: UserCog, roles: [ROLES.ADMIN] },
+    ],
+  },
+  {
+    title: 'My Appointments',
+    items: [
+      { label: 'My Appointments', path: ROUTES.MY_APPOINTMENTS, icon: CalendarCheck, roles: [ROLES.PATIENT] },
     ],
   },
   {

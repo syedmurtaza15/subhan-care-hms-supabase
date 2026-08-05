@@ -9,6 +9,7 @@ import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import OtpVerificationPage from '../pages/auth/OtpVerificationPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
+import MyAppointmentsPage from '../pages/dashboard/MyAppointmentsPage';
 import PatientsListPage from '../pages/dashboard/patients/PatientsListPage';
 import PatientDetailPage from '../pages/dashboard/patients/PatientDetailPage';
 import PatientHistoryPage from '../pages/dashboard/patients/PatientHistoryPage';
@@ -95,7 +96,7 @@ const AppRoutes = () => {
       >
         <Route index element={<DashboardPage />} />
 
-        {/* Patients - Admin, Receptionist, Doctor, Billing Staff */}
+        {/* Patients - Admin, Receptionist can view/create/edit. Doctor & Billing Staff can view only */}
         <Route 
           path="patients" 
           element={
@@ -107,7 +108,7 @@ const AppRoutes = () => {
         <Route 
           path="patients/new" 
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST']}>
               <PatientsListPage />
             </ProtectedRoute>
           } 
@@ -129,10 +130,31 @@ const AppRoutes = () => {
           } 
         />
 
-        {/* Doctors - All authenticated users */}
-        <Route path="doctors" element={<DoctorsListPage />} />
-        <Route path="doctors/new" element={<DoctorsListPage />} />
-        <Route path="doctors/:id" element={<DoctorDetailPage />} />
+        {/* Doctors - Admin, Receptionist, Doctor, Billing Staff */}
+        <Route 
+          path="doctors" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
+              <DoctorsListPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="doctors/new" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DoctorsListPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="doctors/:id" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
+              <DoctorDetailPage />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Appointments - Admin, Receptionist, Doctor, Billing Staff (view only) */}
         <Route 
@@ -154,7 +176,7 @@ const AppRoutes = () => {
         <Route 
           path="appointments/new" 
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR']}>
+            <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST']}>
               <AppointmentsPage />
             </ProtectedRoute>
           } 
@@ -164,6 +186,16 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'BILLING_STAFF']}>
               <AppointmentDetailPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* My Appointments - Patient only */}
+        <Route 
+          path="my-appointments" 
+          element={
+            <ProtectedRoute allowedRoles={['PATIENT']}>
+              <MyAppointmentsPage />
             </ProtectedRoute>
           } 
         />

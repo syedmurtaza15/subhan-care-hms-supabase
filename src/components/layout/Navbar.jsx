@@ -55,6 +55,10 @@ const Navbar = ({ onToggleSidebar, isMobile, sidebarCollapsed }) => {
   const notifRef = useRef(null);
   const userMenuRef = useRef(null);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   const closeMenus = useCallback(() => {
     setNotifOpen(false);
     setUserMenuOpen(false);

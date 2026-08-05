@@ -23,7 +23,9 @@ import {
   ConfirmDialog,
 } from '../../../components/ui';
 import { useDoctors, useAppointments, usePatients } from '../../../context/DataContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
+import { ROLES } from '../../../constants/roles';
 import { initialsFromName, formatDate } from '../../../utils/helpers';
 import DoctorForm from './DoctorForm';
 import './DoctorsListPage.css';
@@ -50,6 +52,10 @@ const DoctorsListPage = () => {
   const { list: listAppointments } = useAppointments();
   const { list: listPatients } = usePatients();
   const toast = useToast();
+
+  // Only Admin can add/edit/delete doctors.
+  const { user } = useAuth();
+  const canManageDoctors = user?.role === ROLES.ADMIN;
 
   const appointments = listAppointments();
   const patients = listPatients();
@@ -122,28 +128,29 @@ const DoctorsListPage = () => {
     toast.success('Doctor removed', `${deletingDoctor.name} was removed from the roster.`);
     setDeletingDoctor(null);
   };
-  console.log("Doctors:", doctors);
   return (
     <div className="doctors-page">
       <header className="doctors-page__header">
         <div>
           <span className="doctors-page__eyebrow">Doctor Management</span>
-          <h1>Doctor Roster</h1>
+          <h1>Doctor Murtaza</h1>
           <p>
             Manage every Subhan Care clinician — profiles, availability, schedules and
             specialization filters.
           </p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={UserPlus}
-          onClick={() => {
-            setEditingDoctor(null);
-            setShowCreate(true);
-          }}
-        >
-          Add Doctor
-        </Button>
+        {canManageDoctors && (
+          <Button
+            variant="primary"
+            leftIcon={UserPlus}
+            onClick={() => {
+              setEditingDoctor(null);
+              setShowCreate(true);
+            }}
+          >
+            Add Doctor
+          </Button>
+        )}
       </header>
 
       <section className="doctors-page__stats">
@@ -231,7 +238,7 @@ const DoctorsListPage = () => {
                   </li>
                   <li>
                     <span>Fee</span>
-                    <strong>Rs 0</strong>
+                    <strong>Rs {doctor.consultationFee || 0}</strong>
                   </li>
                   <li>
                     <span>Upcoming</span>
@@ -261,25 +268,29 @@ const DoctorsListPage = () => {
                       View
                     </Button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    leftIcon={Pencil}
-                    onClick={() => {
-                      setEditingDoctor(doctor);
-                      setShowCreate(false);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="small"
-                    leftIcon={Trash2}
-                    onClick={() => setDeletingDoctor(doctor)}
-                  >
-                    Delete
-                  </Button>
+                  {canManageDoctors && (
+                    <Button
+                      variant="ghost"
+                      size="small"
+                      leftIcon={Pencil}
+                      onClick={() => {
+                        setEditingDoctor(doctor);
+                        setShowCreate(false);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {canManageDoctors && (
+                    <Button
+                      variant="danger"
+                      size="small"
+                      leftIcon={Trash2}
+                      onClick={() => setDeletingDoctor(doctor)}
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </article>
             );
@@ -290,16 +301,18 @@ const DoctorsListPage = () => {
               title="No doctors found"
               description="Try clearing filters or add a new doctor to get started."
               action={
-                <Button
-                  variant="primary"
-                  leftIcon={UserPlus}
-                  onClick={() => {
-                    setEditingDoctor(null);
-                    setShowCreate(true);
-                  }}
-                >
-                  Add Doctor
-                </Button>
+                canManageDoctors ? (
+                  <Button
+                    variant="primary"
+                    leftIcon={UserPlus}
+                    onClick={() => {
+                      setEditingDoctor(null);
+                      setShowCreate(true);
+                    }}
+                  >
+                    Add Doctor
+                  </Button>
+                ) : undefined
               }
             />
           )}

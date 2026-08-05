@@ -40,8 +40,8 @@ const AppointmentForm = ({
   const [values, setValues] = useState(() => ({
     patientId: initialValues?.patientId || defaultPatientId || patients[0]?.id || '',
     doctorId: initialValues?.doctorId || defaultDoctorId || doctors[0]?.id || '',
-    appointmentDate: initialValues?.appointmentDate || today,
-    appointmentTime: initialValues?.appointmentTime || '09:00',
+    appointmentDate: initialValues?.appointmentDate || initialValues?.date || today,
+    appointmentTime: initialValues?.appointmentTime || initialValues?.time || '09:00',
     status: initialValues?.status || 'confirmed',
     reason: initialValues?.reason || '',
     notes: initialValues?.notes || '',
@@ -56,16 +56,25 @@ const AppointmentForm = ({
   );
 
   const takenSlots = useMemo(() => {
-    return allAppointments
-      .filter(
-        (a) =>
-          a.doctorId === values.doctorId &&
-          a.appointmentDate === values.appointmentDate &&
-          a.id !== initialValues?.id &&
-          a.status !== 'cancelled',
-      )
-      .map((a) => a.appointmentTime);
-  }, [allAppointments, values.doctorId, values.appointmentDate, initialValues?.id]);
+    const slots = new Set(
+      allAppointments
+        .filter(
+          (a) =>
+            a.doctorId === values.doctorId &&
+            (a.appointmentDate || a.date) === values.appointmentDate &&
+            a.id !== initialValues?.id &&
+            a.status !== 'cancelled',
+        )
+        .map((a) => a.appointmentTime || a.time),
+    );
+    // When creating a new appointment, mark the currently selected slot as taken
+    // so it's visually disabled and reserved while the user fills out the form.
+    // When editing, also mark it as taken to prevent accidental changes.
+    if (values.appointmentTime) {
+      slots.add(values.appointmentTime);
+    }
+    return Array.from(slots);
+  }, [allAppointments, values.doctorId, values.appointmentDate, values.appointmentTime, initialValues?.id]);
 
   const patientOptions = patients.map((p) => ({
     value: p.id,
@@ -107,9 +116,36 @@ const AppointmentForm = ({
     setErrors(allErrors);
     setTouched(Object.fromEntries(Object.keys(values).map((k) => [k, true])));
     if (Object.values(allErrors).some(Boolean)) return;
+
+    // Double-booking prevention: check if this doctor already has an appointment
+    // at the selected date/time before submitting.
+    const conflict = allAppointments.find(
+      (a) =>
+        a.doctorId === values.doctorId &&
+        (a.appointmentDate || a.date) === values.appointmentDate &&
+        (a.appointmentTime || a.time) === values.appointmentTime &&
+        a.id !== initialValues?.id &&
+        a.status !== 'cancelled',
+    );
+
+    if (conflict) {
+      setErrors((prev) => ({
+        ...prev,
+        appointmentTime: `This time slot is already booked for ${conflict.id}. Please choose another slot.`,
+      }));
+      setTouched((prev) => ({ ...prev, appointmentTime: true }));
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await onSubmit(values);
+      // Include legacy date/time aliases so older display pages that read
+      // appt.date / appt.time still work in localStorage (demo) mode.
+      await onSubmit({
+        ...values,
+        date: values.appointmentDate,
+        time: values.appointmentTime,
+      });
     } finally {
       setIsSubmitting(false);
     }

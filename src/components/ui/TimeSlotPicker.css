@@ -43,6 +43,14 @@
   text-decoration: line-through;
 }
 
+.time-slot-picker__slot--active:not(:disabled) {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+}
+
 .time-slot-picker__empty {
   margin: 0;
   padding: 14px;

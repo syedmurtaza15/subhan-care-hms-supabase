@@ -28,8 +28,10 @@ import {
   StatusBadge,
 } from '../../../components/ui';
 import { useAppointments, usePatients, useDoctors, useData } from '../../../context/DataContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { formatDate, formatTime, initialsFromName } from '../../../utils/helpers';
+import { ROLES } from '../../../constants/roles';
 import AppointmentForm from './AppointmentForm';
 import './AppointmentsPage.css';
 
@@ -44,11 +46,15 @@ const STATUS_FILTERS = [
 
 const AppointmentsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const appointments = useAppointments();
   const { list: listDoctors } = useDoctors();
   const { list: listPatients } = usePatients();
-   const { refresh } = useData();
+  const { refresh } = useData();
   const toast = useToast();
+
+  // Only Admin and Receptionist can book/reschedule appointments. Doctor can only cancel.
+  const canManageAppointments = user?.role === ROLES.ADMIN || user?.role === ROLES.RECEPTIONIST;
 
   const doctors = listDoctors();
   const patients = listPatients();
@@ -69,28 +75,26 @@ const AppointmentsPage = () => {
     ...doctors.map((d) => ({ value: d.id, label: d.name })),
   ];
 
-  const patientName = (id) => {
-  console.log("Searching patient:", id, patients);
-  console.log("Patients:", patients);
-console.log("Doctors:", doctors);
-console.log("Appointments:", appointments.list());
-  return patients.find((p) => p.id === id)?.name || 'Unknown';
-};
+  const patientName = (id) =>
+    patients.find((p) => p.id === id)?.name || 'Unknown';
 
-const doctorName = (id) => {
-  console.log("Searching doctor:", id, doctors);
-  return doctors.find((d) => d.id === id)?.name || 'Unknown';
-};
+  const doctorName = (id) =>
+    doctors.find((d) => d.id === id)?.name || 'Unknown';
+
+  // Helper: read date/time from either canonical or legacy field names
+  const apptDate = (a) => a.appointmentDate || a.date || '';
+  const apptTime = (a) => a.appointmentTime || a.time || '';
 
   const stats = useMemo(() => {
     const list = appointments.list();
     const today = new Date().toISOString().split('T')[0];
     return {
       total: list.length,
-      today: list.filter((a) => a.date === today && a.status !== 'cancelled').length,
+      today: list.filter((a) => apptDate(a) === today && a.status !== 'cancelled').length,
       waiting: list.filter((a) => a.status === 'waiting').length,
       completed: list.filter((a) => a.status === 'completed').length,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments]);
 
   const filtered = useMemo(() => {
@@ -104,17 +108,19 @@ const doctorName = (id) => {
       if (filters.doctorId !== 'all' && a.doctorId !== filters.doctorId) return false;
       return true;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments, searchTerm, filters, patients, doctors]);
 
   const sorted = useMemo(
-  () =>
-    filtered.slice().sort((a, b) =>
-      `${b.appointmentDate || ''}${b.appointmentTime || ''}`.localeCompare(
-        `${a.appointmentDate || ''}${a.appointmentTime || ''}`
-      )
-    ),
-  [filtered]
-);
+    () =>
+      filtered.slice().sort((a, b) =>
+        `${apptDate(b)}${apptTime(b)}`.localeCompare(
+          `${apptDate(a)}${apptTime(a)}`
+        )
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filtered]
+  );
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const pageItems = useMemo(() => {
@@ -126,24 +132,25 @@ const doctorName = (id) => {
   const markers = useMemo(() => {
     const map = {};
     appointments.list().forEach((a) => {
-      map[a.date] = (map[a.date] || 0) + 1;
+      const d = apptDate(a);
+      if (d) map[d] = (map[d] || 0) + 1;
     });
     return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments]);
 
   const dayAppointments = useMemo(() => {
     return appointments
       .list()
-      .filter((a) => a.date === selectedDate)
-      .sort((a, b) => a.time.localeCompare(b.time));
+      .filter((a) => apptDate(a) === selectedDate)
+      .sort((a, b) => apptTime(a).localeCompare(apptTime(b)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments, selectedDate]);
 
   const handleCreate = async (values) => {
-   const created = await appointments.create(values);
-
-await refresh();
-
-    toast.success('Appointment booked', `${created.id} scheduled for ${formatDate(created.date)}.`);
+    const created = await appointments.create(values);
+    await refresh();
+    toast.success('Appointment booked', `${created.id} scheduled for ${formatDate(apptDate(created))}.`);
     setCreateOpen(false);
   };
 
@@ -154,24 +161,15 @@ await refresh();
   };
 
   const handleDelete = async (id) => {
-  try {
-    console.log("Cancelling appointment ID:", id);
-
-    await appointments.update(id, {
-      status: "CANCELLED",
-    });
-
-    await refresh();
-
-    setDeleting(null);
-
-    toast.success("Appointment cancelled successfully");
-
-  } catch (error) {
-    console.error("Cancel appointment error:", error);
-    toast.error(error.message || "Failed to cancel appointment");
-  }
-};
+    try {
+      await appointments.update(id, { status: 'cancelled' });
+      await refresh();
+      setDeleting(null);
+      toast.success('Appointment cancelled successfully');
+    } catch (error) {
+      toast.error(error.message || 'Failed to cancel appointment');
+    }
+  };
 
   const handleCancel = async (appt) => {
     await appointments.update(appt.id, { status: 'cancelled' });
@@ -186,9 +184,11 @@ await refresh();
           <h1>Appointments</h1>
           <p>Book, reschedule and track every consultation across Subhan Care.</p>
         </div>
-        <Button variant="primary" leftIcon={Plus} onClick={() => setCreateOpen(true)}>
-          Book Appointment
-        </Button>
+        {canManageAppointments && (
+          <Button variant="primary" leftIcon={Plus} onClick={() => setCreateOpen(true)}>
+            Book Appointment
+          </Button>
+        )}
       </header>
 
       <section className="appointments-page__stats">
@@ -276,8 +276,8 @@ await refresh();
             {pageItems.map((appt) => (
               <article key={appt.id} className="appointment-row">
                 <div className="appointment-row__time">
-                  <strong>{formatTime(`1970-01-01T${appt.time}:00`)}</strong>
-                  <span>{formatDate(appt.date)}</span>
+                  <strong>{formatTime(`1970-01-01T${apptTime(appt)}:00`)}</strong>
+                  <span>{formatDate(apptDate(appt))}</span>
                 </div>
                 <div className="appointment-row__body">
                   <div className="appointment-row__id-row">
@@ -286,7 +286,7 @@ await refresh();
                   </div>
                   <p className="appointment-row__patient">{patientName(appt.patientId)}</p>
                   <p className="appointment-row__meta">
-                    with <strong>{doctorName(appt.doctorId)}</strong> · {appt.duration} min ·{' '}
+                    with <strong>{doctorName(appt.doctorId)}</strong> · {appt.duration || 30} min ·{' '}
                     {appt.mode === 'video' ? (
                       <span className="appointment-row__mode appointment-row__mode--video">
                         <Video size={11} aria-hidden="true" /> Video
@@ -308,17 +308,19 @@ await refresh();
                   >
                     <Eye size={16} />
                   </button>
-                  <button
-                    type="button"
-                    className="appointment-row__icon-btn"
-                    title="Reschedule / edit"
-                    onClick={() => {
-                      setEditing(appt);
-                      setCreateOpen(false);
-                    }}
-                  >
-                    <Pencil size={16} />
-                  </button>
+                  {canManageAppointments && (
+                    <button
+                      type="button"
+                      className="appointment-row__icon-btn"
+                      title="Reschedule / edit"
+                      onClick={() => {
+                        setEditing(appt);
+                        setCreateOpen(false);
+                      }}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  )}
                   {appt.status !== 'cancelled' && (
                     <button
                       type="button"
@@ -329,14 +331,16 @@ await refresh();
                       <XCircle size={16} />
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="appointment-row__icon-btn appointment-row__icon-btn--danger"
-                    title="Delete"
-                    onClick={() => setDeleting(appt)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {canManageAppointments && (
+                    <button
+                      type="button"
+                      className="appointment-row__icon-btn appointment-row__icon-btn--danger"
+                      title="Delete"
+                      onClick={() => setDeleting(appt)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </article>
             ))}
@@ -346,9 +350,11 @@ await refresh();
                 title="No appointments found"
                 description="Try clearing filters or book a new appointment."
                 action={
-                  <Button variant="primary" leftIcon={Plus} onClick={() => setCreateOpen(true)}>
-                    Book Appointment
-                  </Button>
+                  canManageAppointments ? (
+                    <Button variant="primary" leftIcon={Plus} onClick={() => setCreateOpen(true)}>
+                      Book Appointment
+                    </Button>
+                  ) : undefined
                 }
               />
             )}
@@ -378,14 +384,16 @@ await refresh();
             title={formatDate(selectedDate, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
             subtitle={`${dayAppointments.length} appointments scheduled`}
             action={
-              <Button
-                variant="primary"
-                size="small"
-                leftIcon={Plus}
-                onClick={() => setCreateOpen(true)}
-              >
-                Book for this day
-              </Button>
+              canManageAppointments ? (
+                <Button
+                  variant="primary"
+                  size="small"
+                  leftIcon={Plus}
+                  onClick={() => setCreateOpen(true)}
+                >
+                  Book for this day
+                </Button>
+              ) : undefined
             }
           >
             {dayAppointments.length === 0 ? (
@@ -400,7 +408,7 @@ await refresh();
                 {dayAppointments.map((appt) => (
                   <li key={appt.id} className={`appointments-page__day-item appointments-page__day-item--${appt.status}`}>
                     <span className="appointments-page__day-time">
-                      {formatTime(`1970-01-01T${appt.time}:00`)}
+                      {formatTime(`1970-01-01T${apptTime(appt)}:00`)}
                     </span>
                     <div>
                       <p className="appointments-page__day-patient">{patientName(appt.patientId)}</p>
@@ -441,19 +449,19 @@ await refresh();
         />
       </Modal>
 
-     <ConfirmDialog
-  isOpen={Boolean(deleting)}
-  onClose={() => setDeleting(null)}
-  onConfirm={() => handleDelete(deleting.id)}
-  variant="danger"
-  title="Cancel appointment?"
-  confirmLabel="Cancel appointment"
-  body={
-    <>
-      You&apos;re about to cancel appointment <strong>{deleting?.id}</strong>.
-    </>
-  }
-/>
+      <ConfirmDialog
+        isOpen={Boolean(deleting)}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => handleDelete(deleting.id)}
+        variant="danger"
+        title="Cancel appointment?"
+        confirmLabel="Cancel appointment"
+        body={
+          <>
+            You're about to cancel appointment <strong>{deleting?.id}</strong>.
+          </>
+        }
+      />
     </div>
   );
 };

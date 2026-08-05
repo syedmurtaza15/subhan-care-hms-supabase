@@ -202,12 +202,12 @@ const PatientDetailPage = () => {
           <ul className="patient-detail__appt-list">
             {appointments
               .slice()
-              .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+              .sort((a, b) => ((a.appointmentDate||a.date) + (a.appointmentTime||a.time)).localeCompare((b.appointmentDate||b.date) + (b.appointmentTime||b.time)))
               .map((appt) => (
                 <li key={appt.id}>
                   <div>
                     <p className="patient-detail__appt-when">
-                      {formatDate(appt.date)} · {formatTime(`1970-01-01T${appt.time}:00`)}
+                      {formatDate(appt.appointmentDate || appt.date)} · {formatTime(`1970-01-01T${appt.appointmentTime || appt.time}:00`)}
                     </p>
                     <p className="patient-detail__appt-reason">{appt.reason}</p>
                   </div>

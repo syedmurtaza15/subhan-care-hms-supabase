@@ -26,18 +26,24 @@ import {
   useDoctors,
   usePatients,
 } from '../../../context/DataContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { formatDate, formatTime, initialsFromName } from '../../../utils/helpers';
+import { ROLES } from '../../../constants/roles';
 import AppointmentForm from './AppointmentForm';
 import './AppointmentDetailPage.css';
 
 const AppointmentDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const appointments = useAppointments();
   const { list: listDoctors } = useDoctors();
   const { list: listPatients } = usePatients();
   const toast = useToast();
+
+  // Only Admin and Receptionist can reschedule/delete. Doctor can only cancel.
+  const canManageAppointments = user?.role === ROLES.ADMIN || user?.role === ROLES.RECEPTIONIST;
 
   const appt = appointments.find(id);
   const patient = appt ? listPatients().find((p) => p.id === appt.patientId) : null;
@@ -62,6 +68,10 @@ const AppointmentDetailPage = () => {
       />
     );
   }
+
+  // Helper: read date/time from either canonical or legacy field names
+  const apptDate = appt.appointmentDate || appt.date || '';
+  const apptTime = appt.appointmentTime || appt.time || '';
 
   const handleSave = async (values) => {
     await appointments.update(appt.id, values);
@@ -90,9 +100,9 @@ const AppointmentDetailPage = () => {
         <div className="appointment-detail__hero-content">
           <div className="appointment-detail__hero-meta">
             <span className="appointment-detail__pill">{appt.id}</span>
-            <h1>{formatDate(appt.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h1>
+            <h1>{formatDate(apptDate, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h1>
             <p>
-              {formatTime(`1970-01-01T${appt.time}:00`)} · {appt.duration} min ·{' '}
+              {formatTime(`1970-01-01T${apptTime}:00`)} · {appt.duration || 30} min ·{' '}
               {appt.mode === 'video' ? (
                 <span className="appointment-detail__mode"><Video size={12} aria-hidden="true" /> Video</span>
               ) : (
@@ -104,17 +114,21 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
           <div className="appointment-detail__hero-actions">
-            <Button variant="outline" leftIcon={Pencil} onClick={() => setEditOpen(true)}>
-              Reschedule
-            </Button>
+            {canManageAppointments && (
+              <Button variant="outline" leftIcon={Pencil} onClick={() => setEditOpen(true)}>
+                Reschedule
+              </Button>
+            )}
             {appt.status !== 'cancelled' && (
               <Button variant="ghost" leftIcon={XCircle} onClick={handleCancel}>
                 Cancel
               </Button>
             )}
-            <Button variant="danger" leftIcon={Trash2} onClick={() => setDeleteOpen(true)}>
-              Delete
-            </Button>
+            {canManageAppointments && (
+              <Button variant="danger" leftIcon={Trash2} onClick={() => setDeleteOpen(true)}>
+                Delete
+              </Button>
+            )}
           </div>
         </div>
       </Card>
@@ -190,7 +204,7 @@ const AppointmentDetailPage = () => {
         confirmLabel="Delete appointment"
         body={
           <>
-            You&apos;re about to permanently delete <strong>{appt.id}</strong>. This action cannot be
+            You're about to permanently delete <strong>{appt.id}</strong>. This action cannot be
             undone.
           </>
         }

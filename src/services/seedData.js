@@ -74,6 +74,16 @@ export const seedIfEmpty = () => {
         status: 'active', assignedDoctor: 'DR-USMAN',
         createdAt: '2026-04-02T12:00:00.000Z', updatedAt: '2026-06-12T15:20:00.000Z',
       },
+      {
+        id: 'PT-2397', name: 'Aisha Mehmood', age: 32, gender: 'Female',
+        phone: '+92 300 1234567', email: 'patient@subancare.com',
+        bloodGroup: 'O+', address: 'House 14, Street 7, Lahore',
+        emergencyContact: 'Imran Mehmood (+92 301 7654321)',
+        allergies: 'Penicillin, pollen',
+        notes: 'Follows up every quarter for hypertension management.',
+        status: 'active', assignedDoctor: 'DR-HAMZA',
+        createdAt: '2026-05-14T09:00:00.000Z', updatedAt: '2026-06-22T14:30:00.000Z',
+      },
     ]);
   }
 
@@ -140,6 +150,8 @@ export const seedIfEmpty = () => {
       { id: 'APT-1005', patientId: 'PT-2395', doctorId: 'DR-SANA', date: dPlus(3), time: '16:00', duration: 45, status: 'confirmed', mode: 'video', reason: 'Migraine treatment plan', notes: '', createdAt: '2026-06-30T10:00:00.000Z', updatedAt: '2026-06-30T10:00:00.000Z' },
       { id: 'APT-1006', patientId: 'PT-2396', doctorId: 'DR-USMAN', date: dPlus(-2), time: '11:30', duration: 30, status: 'completed', mode: 'in-person', reason: 'Post-op follow-up', notes: 'Recovery progressing well.', createdAt: '2026-06-25T09:00:00.000Z', updatedAt: '2026-06-27T12:00:00.000Z' },
       { id: 'APT-1007', patientId: 'PT-2391', doctorId: 'DR-HAMZA', date: dPlus(-7), time: '15:00', duration: 30, status: 'cancelled', mode: 'in-person', reason: 'BP monitoring', notes: 'Cancelled by patient.', createdAt: '2026-06-20T08:00:00.000Z', updatedAt: '2026-06-23T08:00:00.000Z' },
+      { id: 'APT-1008', patientId: 'PT-2397', doctorId: 'DR-HAMZA', date: dPlus(1), time: '09:30', duration: 30, status: 'confirmed', mode: 'in-person', reason: 'Routine cardiology follow-up', notes: '', createdAt: '2026-07-01T08:00:00.000Z', updatedAt: '2026-07-01T08:00:00.000Z' },
+      { id: 'APT-1009', patientId: 'PT-2397', doctorId: 'DR-HAMZA', date: dPlus(5), time: '14:00', duration: 30, status: 'confirmed', mode: 'video', reason: 'BP medication review', notes: '', createdAt: '2026-07-02T09:00:00.000Z', updatedAt: '2026-07-02T09:00:00.000Z' },
     ]);
   }
 

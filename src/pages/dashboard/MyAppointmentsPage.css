@@ -1,0 +1,165 @@
+.my-appointments-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.my-appointments-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.my-appointments-page__eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+
+.my-appointments-page__header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+.my-appointments-page__header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.my-appointments-page__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.my-appointments-page__stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.my-appointments-page__stat svg {
+  color: var(--color-primary);
+}
+
+.my-appointments-page__stat-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.my-appointments-page__stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.my-appointments__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-appointments__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.my-appointments__time {
+  min-width: 90px;
+  text-align: center;
+  padding: 8px;
+  background: var(--color-background);
+  border-radius: 8px;
+}
+
+.my-appointments__time strong {
+  display: block;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.my-appointments__time span {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.my-appointments__body {
+  flex: 1;
+}
+
+.my-appointments__id-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.my-appointments__id {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: monospace;
+}
+
+.my-appointments__doctor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+.my-appointments__meta {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 4px;
+}
+
+.my-appointments__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.my-appointments__mode--video {
+  color: var(--color-primary);
+}
+
+.my-appointments__mode--in-person {
+  color: var(--color-success);
+}
+
+.my-appointments__reason {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.my-appointments__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

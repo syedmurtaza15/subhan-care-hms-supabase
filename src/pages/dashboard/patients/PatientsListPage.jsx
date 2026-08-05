@@ -23,8 +23,10 @@ import {
   ConfirmDialog,
 } from '../../../components/ui';
 import { usePatients, useDoctors, useAppointments } from '../../../context/DataContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { initialsFromName, formatDate } from '../../../utils/helpers';
+import { ROLES } from '../../../constants/roles';
 import PatientForm from './PatientForm';
 import PatientFilters from './PatientFilters';
 import './PatientsListPage.css';
@@ -38,10 +40,14 @@ const GENDER_OPTIONS = [
 
 const PatientsListPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const patients = usePatients();
   const { list: listDoctors } = useDoctors();
   const { list: listAppointments } = useAppointments();
   const toast = useToast();
+
+  // Only Admin and Receptionist can add/edit/delete patients. Doctor & Billing Staff are view-only.
+  const canManagePatients = user?.role === ROLES.ADMIN || user?.role === ROLES.RECEPTIONIST;
 
   const doctors = listDoctors();
   const appointments = listAppointments();
@@ -123,16 +129,18 @@ const PatientsListPage = () => {
             dive into medical history with one click.
           </p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={UserPlus}
-          onClick={() => {
-            setEditingPatient(null);
-            setShowCreate(true);
-          }}
-        >
-          Add Patient
-        </Button>
+        {canManagePatients && (
+          <Button
+            variant="primary"
+            leftIcon={UserPlus}
+            onClick={() => {
+              setEditingPatient(null);
+              setShowCreate(true);
+            }}
+          >
+            Add Patient
+          </Button>
+        )}
       </header>
 
       <section className="patients-page__stats">
@@ -248,25 +256,29 @@ const PatientsListPage = () => {
                       >
                         <Eye size={16} />
                       </button>
-                      <button
-                        type="button"
-                        className="patients-page__icon-btn"
-                        onClick={() => {
-                          setEditingPatient(patient);
-                          setShowCreate(false);
-                        }}
-                        title="Edit patient"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        className="patients-page__icon-btn patients-page__icon-btn--danger"
-                        onClick={() => setDeletingPatient(patient)}
-                        title="Delete patient"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {canManagePatients && (
+                        <>
+                          <button
+                            type="button"
+                            className="patients-page__icon-btn"
+                            onClick={() => {
+                              setEditingPatient(patient);
+                              setShowCreate(false);
+                            }}
+                            title="Edit patient"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="patients-page__icon-btn patients-page__icon-btn--danger"
+                            onClick={() => setDeletingPatient(patient)}
+                            title="Delete patient"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -279,16 +291,18 @@ const PatientsListPage = () => {
               title="No patients found"
               description="Try clearing filters or add a new patient to get started."
               action={
-                <Button
-                  variant="primary"
-                  leftIcon={UserPlus}
-                  onClick={() => {
-                    setEditingPatient(null);
-                    setShowCreate(true);
-                  }}
-                >
-                  Add Patient
-                </Button>
+                canManagePatients ? (
+                  <Button
+                    variant="primary"
+                    leftIcon={UserPlus}
+                    onClick={() => {
+                      setEditingPatient(null);
+                      setShowCreate(true);
+                    }}
+                  >
+                    Add Patient
+                  </Button>
+                ) : undefined
               }
             />
           )}

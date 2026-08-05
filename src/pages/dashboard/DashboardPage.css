@@ -287,6 +287,25 @@
   text-overflow: ellipsis;
 }
 
+.dashboard-page__empty {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+.dashboard-page__view-all {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.dashboard-page__view-all:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 1100px) {
   .dashboard-page__grid {
     grid-template-columns: 1fr;

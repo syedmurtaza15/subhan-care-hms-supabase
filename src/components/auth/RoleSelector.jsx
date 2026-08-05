@@ -1,4 +1,4 @@
-import { UserCog, Stethoscope, ClipboardList, Pill, Receipt } from 'lucide-react';
+import { UserCog, Stethoscope, ClipboardList, Pill, Receipt, HeartPulse } from 'lucide-react';
 import { ROLE_LABEL, ROLES } from '../../constants/roles';
 import { classNames } from '../../utils/helpers';
 import './RoleSelector.css';
@@ -9,6 +9,7 @@ const ROLE_ICONS = {
   [ROLES.RECEPTIONIST]: ClipboardList,
   [ROLES.PHARMACIST]: Pill,
   [ROLES.BILLING_STAFF]: Receipt,
+  [ROLES.PATIENT]: HeartPulse,
 };
 
 /**

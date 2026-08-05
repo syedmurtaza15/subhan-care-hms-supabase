@@ -16,6 +16,7 @@ export const ROLES = Object.freeze({
   RECEPTIONIST: 'RECEPTIONIST',
   PHARMACIST: 'PHARMACIST',
   BILLING_STAFF: 'BILLING_STAFF',
+  PATIENT: 'PATIENT',
 });
 
 export const ROLE_LABEL = Object.freeze({
@@ -24,6 +25,7 @@ export const ROLE_LABEL = Object.freeze({
   [ROLES.RECEPTIONIST]: 'Receptionist',
   [ROLES.PHARMACIST]: 'Pharmacist',
   [ROLES.BILLING_STAFF]: 'Billing Staff',
+  [ROLES.PATIENT]: 'Patient',
 });
 
 /**
@@ -71,6 +73,11 @@ export const DEMO_CREDENTIALS = Object.freeze({
     email: safe('VITE_DEMO_BILLING_EMAIL'),
     password: safe('VITE_DEMO_BILLING_PASSWORD'),
     name: 'Hina Tariq',
+  },
+  [ROLES.PATIENT]: {
+    email: safe('VITE_DEMO_PATIENT_EMAIL'),
+    password: safe('VITE_DEMO_PATIENT_PASSWORD'),
+    name: 'Aisha Mehmood',
   },
 });
 

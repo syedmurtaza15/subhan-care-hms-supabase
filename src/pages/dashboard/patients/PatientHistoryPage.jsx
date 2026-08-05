@@ -55,7 +55,7 @@ const PatientHistoryPage = () => {
     () =>
       listAppointments()
         .filter((a) => a.patientId === id && a.status !== 'cancelled')
-        .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)),
+        .sort((a, b) => ((b.appointmentDate||b.date) + (b.appointmentTime||b.time)).localeCompare((a.appointmentDate||a.date) + (a.appointmentTime||a.time))),
     [listAppointments, id],
   );
 
@@ -162,8 +162,8 @@ const PatientHistoryPage = () => {
                   <span className="patient-history__timeline-dot" />
                   <div>
                     <p className="patient-history__timeline-when">
-                      {formatDate(visit.date)} ·{' '}
-                      {formatTime(`1970-01-01T${visit.time}:00`)} · {visit.duration} min
+                      {formatDate(visit.appointmentDate || visit.date)} ·{' '}
+                      {formatTime(`1970-01-01T${visit.appointmentTime || visit.time}:00`)} · {visit.duration} min
                     </p>
                     <p className="patient-history__timeline-title">{visit.reason}</p>
                     {visit.notes && (
